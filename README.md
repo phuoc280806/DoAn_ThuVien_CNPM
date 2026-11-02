@@ -114,42 +114,176 @@ Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận 
 
 ## Cài đặt và chạy
 
-> Phần này sẽ cập nhật khi có mã nguồn.
-
-Yêu cầu: Node.js 20 trở lên, MySQL 8, Git.
+Yêu cầu: Node.js 20 trở lên, MySQL 8 (đang chạy), Git.
 
 ```bash
-git clone <url-repo>
+git clone https://github.com/phuoc280806/DoAn_ThuVien_CNPM.git
 cd DoAn_ThuVien_CNPM
 
-# 1. Database: tạo CSDL và import dữ liệu
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/seed.sql
-
-# 2. Backend (http://localhost:5000)
+# 1. Backend
 cd backend
-cp .env.example .env      # sửa thông tin MySQL trong .env
+cp .env.example .env      # mở .env, điền DB_PASSWORD là mật khẩu MySQL của máy bạn
 npm install
-npm run dev
 
-# 3. Frontend (http://localhost:5173)
+# 2. Tạo database thuvien_thpt và nạp dữ liệu mẫu
+npm run db:reset
+
+# 3. Chạy backend (http://localhost:5000)
+npm run dev               # kiểm tra: mở http://localhost:5000/api/health
+
+# 4. Frontend (http://localhost:5173) – chưa có
 cd ../frontend
 cp .env.example .env
 npm install
 npm run dev
 ```
 
-## Quy ước làm việc nhóm
+`npm run db:reset` **xóa sạch** database `thuvien_thpt` rồi tạo lại từ `database/schema.sql` và `database/seed.sql`. Dùng lệnh này mỗi khi có người sửa schema, hoặc khi muốn đưa dữ liệu về trạng thái ban đầu. Cũng có thể mở hai file SQL này trong MySQL Workbench và chạy lần lượt.
 
-- Không commit thẳng lên `main`. Mỗi chức năng làm trên một nhánh riêng:
-  `feature/<module>`, ví dụ `feature/loans`, `feature/frontend-login`.
-- Xong việc thì push nhánh và tạo Pull Request vào `main`, có ít nhất 1 thành viên khác xem trước khi merge.
-- Trước khi bắt đầu làm: `git checkout main && git pull`, rồi tạo nhánh mới từ `main`.
-- Commit message ngắn gọn, mô tả việc đã làm, ví dụ: `loans: kiểm tra giới hạn số sách khi lập phiếu`.
-- Không commit file `.env`, `node_modules/`. Thông tin cấu hình mới thì thêm vào `.env.example`.
-- Thay đổi cấu trúc bảng thì cập nhật `database/schema.sql` và báo cả nhóm.
+### Tài khoản mẫu
+
+Mật khẩu chung: `Thuvien@2026`
+
+| Tài khoản | Vai trò | Tình huống thử |
+|---|---|---|
+| `AD001` | Admin | |
+| `TT01`, `TT02` | Thủ thư | |
+| `HS2026001` | Học sinh | Không mượn gì → TH1 mượn bình thường |
+| `HS2026002` | Học sinh | Đang mượn 3/3 → TH2 mượn thêm bị từ chối |
+| `HS2026003` | Học sinh | Còn 2 ngày đến hạn → TH3 trả đúng hạn, nhắc hạn |
+| `HS2026004` | Học sinh | Quá hạn 5 ngày → TH4 phạt 5.000đ |
+| `HS2026005` | Học sinh | Nợ phạt 3.000đ → TH5 bị chặn mượn |
+| `HS2026006` | Học sinh | Quá hạn 45 ngày, phiếu theo quy định cũ 14 ngày → phạt tối đa 30.000đ, TH6 |
+| `HS2026007` | Học sinh | Thẻ hết hạn |
+| `HS2026008` | Học sinh | Đã gia hạn 1 lần |
+| `HS2026009` | Học sinh | Thẻ bị khóa |
+| `HS2026010` | Học sinh | Tài khoản bị khóa |
+| `GV2026001` – `GV2026003` | Giáo viên | Đang mượn / có lịch sử nộp phạt / không mượn gì |
+
+Chi tiết từng tình huống ghi ở đầu file `database/seed.sql`.
+
+## Hướng dẫn sử dụng Git
+
+Repo: https://github.com/phuoc280806/DoAn_ThuVien_CNPM
+
+### Quy ước chung
+
+- **Không commit thẳng lên `main`.** Mỗi việc làm trên một nhánh riêng, xong thì tạo Pull Request (PR) để gộp vào `main`.
+- Đặt tên nhánh theo dạng `feature/<việc>` hoặc `fix/<lỗi>`, ví dụ `feature/loans`, `feature/frontend-login`, `fix/tinh-phat`.
+- Commit message ngắn gọn, ghi rõ module và việc đã làm, ví dụ `loans: kiểm tra giới hạn số sách khi lập phiếu`.
+- Không commit `.env`, `node_modules/`. Có biến cấu hình mới thì thêm vào `.env.example`.
+- Sửa cấu trúc bảng thì cập nhật `database/schema.sql` và báo cả nhóm.
+- Mỗi người làm một module khác nhau để hạn chế xung đột (conflict).
+
+### Bước 1. Cài đặt (làm một lần)
+
+1. Cài Git: https://git-scm.com/downloads
+2. Khai báo tên và email, dùng đúng email tài khoản GitHub:
+   ```bash
+   git config --global user.name "Ten Cua Ban"
+   git config --global user.email "email-github@example.com"
+   ```
+3. Chấp nhận lời mời làm Collaborator của repo, gửi qua email hoặc xem tại https://github.com/notifications.
+
+### Bước 2. Lấy repo về máy (làm một lần)
+
+```bash
+cd D:/                      # thư mục muốn lưu dự án
+git clone https://github.com/phuoc280806/DoAn_ThuVien_CNPM.git
+cd DoAn_ThuVien_CNPM
+```
+
+Lần đầu push, Git sẽ mở cửa sổ đăng nhập GitHub. Chọn **Sign in with your browser** để đăng nhập.
+
+### Bước 3. Mỗi lần bắt đầu làm việc mới
+
+Luôn cập nhật `main` mới nhất rồi tạo nhánh mới từ đó:
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feature/loans       # đổi tên cho đúng việc của bạn
+```
+
+Đang làm dở trên một nhánh có sẵn thì chỉ cần chuyển sang nhánh đó:
+
+```bash
+git checkout feature/loans
+```
+
+### Bước 4. Lưu thay đổi (commit)
+
+```bash
+git status                          # xem file nào đã thay đổi
+git add .                           # đưa tất cả thay đổi vào commit
+                                    # hoặc: git add backend/src/modules/loans
+git commit -m "loans: thêm API lập phiếu mượn"
+```
+
+Nên commit thường xuyên, mỗi commit là một phần việc hoàn chỉnh nhỏ.
+
+### Bước 5. Đẩy lên GitHub (push)
+
+Trước khi push, lấy các thay đổi mới trên `main` về nhánh của mình để giảm xung đột:
+
+```bash
+git pull origin main                # gộp main mới nhất vào nhánh hiện tại
+git push -u origin feature/loans    # lần đầu push nhánh này
+git push                            # các lần sau chỉ cần lệnh này
+```
+
+### Bước 6. Tạo Pull Request
+
+1. Mở trang repo trên GitHub, bấm **Compare & pull request** ở thanh thông báo màu vàng, hoặc vào tab **Pull requests** → **New pull request**.
+2. Chọn `base: main` ← `compare: feature/loans`.
+3. Ghi tiêu đề và mô tả việc đã làm, ở mục **Reviewers** chọn một thành viên khác.
+4. Người review xem code, góp ý hoặc **Approve**, sau đó bấm **Merge pull request**.
+5. Sau khi merge, xóa nhánh trên GitHub (nút **Delete branch**), rồi trên máy:
+   ```bash
+   git checkout main
+   git pull origin main
+   git branch -d feature/loans
+   ```
+
+### Xử lý xung đột (conflict)
+
+Khi `git pull` báo `CONFLICT`, Git đánh dấu đoạn bị xung đột trong file:
+
+```
+<<<<<<< HEAD
+code của bạn
+=======
+code của người khác
+>>>>>>> main
+```
+
+1. Mở file, giữ lại phần đúng (hoặc kết hợp cả hai), xóa các dòng `<<<<<<<`, `=======`, `>>>>>>>`. VS Code có sẵn nút **Accept Current / Accept Incoming / Accept Both**.
+2. Lưu file rồi chạy:
+   ```bash
+   git add .
+   git commit -m "Gộp main, xử lý xung đột"
+   git push
+   ```
+
+Không chắc nên giữ phần nào thì hỏi người viết đoạn code kia trước khi sửa.
+
+### Lệnh hay dùng
+
+| Lệnh | Tác dụng |
+|---|---|
+| `git status` | Xem trạng thái các file |
+| `git log --oneline` | Xem lịch sử commit |
+| `git branch` | Xem các nhánh trên máy, nhánh hiện tại có dấu `*` |
+| `git diff` | Xem thay đổi chưa `add` |
+| `git restore <file>` | Bỏ thay đổi chưa `add` của một file |
+| `git restore --staged <file>` | Bỏ `add` một file (giữ nguyên nội dung đã sửa) |
+| `git stash` / `git stash pop` | Cất tạm thay đổi để chuyển nhánh / lấy lại |
+
+**Không dùng** `git push --force` lên `main`, vì lệnh này ghi đè và làm mất code của người khác.
 
 ## Tiến độ
+
+Lộ trình chi tiết của backend và các quyết định bổ sung cho đặc tả: [docs/LO_TRINH_BACKEND.md](docs/LO_TRINH_BACKEND.md).
 
 - [x] Khảo sát bài toán, đặc tả use case (chương 1–2)
 - [ ] Phân tích: lớp phân tích, biểu đồ trình tự, ERD

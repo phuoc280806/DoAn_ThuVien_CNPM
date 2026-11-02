@@ -1,0 +1,195 @@
+### =====================================================================
+### Thử tay GĐ2 – Đăng nhập, phân quyền, quản lý tài khoản (UC001, UC002)
+###
+### Cách dùng:
+###   1. Cài extension "REST Client" (tác giả Huachao Mao) cho VS Code
+###   2. Chạy backend: cd backend && npm run dev
+###   3. Bấm dòng chữ "Send Request" hiện phía trên mỗi request
+###   4. Chạy theo thứ tự từ trên xuống: các request sau dùng token của request đăng nhập trước đó
+###
+### Mật khẩu mọi tài khoản mẫu: Thuvien@2026
+### Muốn đưa dữ liệu về ban đầu: npm run db:reset
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+@password = Thuvien@2026
+
+### 0. Server và database có chạy không
+GET {{baseUrl}}/health
+
+
+### ---------------------------------------------------------------------
+### UC001 – ĐĂNG NHẬP
+### ---------------------------------------------------------------------
+
+### 1. Đăng nhập Admin → 200, có token, role = ADMIN
+# @name admin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "AD001", "password": "{{password}}" }
+
+### 2. Đăng nhập Thủ thư → 200, role = LIBRARIAN
+# @name librarian
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "{{password}}" }
+
+### 3. Đăng nhập độc giả → 200, role = READER, có reader.readerCode
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "HS2026001", "password": "{{password}}" }
+
+### 4. (5a) Thiếu mật khẩu → 400 "Cần nhập đầy đủ tên đăng nhập và mật khẩu"
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "AD001" }
+
+### 5. (6a) Sai mật khẩu → 401 "Tên đăng nhập hoặc mật khẩu chưa đúng"
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "AD001", "password": "sai-mat-khau" }
+
+### 6. (6a) Tên đăng nhập không tồn tại → 401, CÙNG câu thông báo với request 5
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "KHONGCO", "password": "{{password}}" }
+
+### 7. (7a) Tài khoản bị khóa → 403 "Tài khoản đã bị khóa, vui lòng liên hệ Admin"
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "HS2026010", "password": "{{password}}" }
+
+### 8. Xem tài khoản đang đăng nhập (dùng token Admin ở request 1) → 200
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{admin.response.body.data.token}}
+
+### 9. Không gửi token → 401 "Bạn chưa đăng nhập"
+GET {{baseUrl}}/auth/me
+
+### 10. (9b) Đăng xuất → 200
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{admin.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### PHÂN QUYỀN
+### ---------------------------------------------------------------------
+
+### 11. Thủ thư gọi chức năng của Admin → 403 "Bạn không có quyền thực hiện chức năng này"
+GET {{baseUrl}}/users
+Authorization: Bearer {{librarian.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### UC002 – QUẢN LÝ TÀI KHOẢN (Admin)
+### ---------------------------------------------------------------------
+
+### 12. Danh sách tài khoản → 200, total = 16
+GET {{baseUrl}}/users?pageSize=100
+Authorization: Bearer {{admin.response.body.data.token}}
+
+### 13. Tìm kiếm không dấu "bui" → ra Bùi Thị Văn, Bùi Thanh Tâm
+GET {{baseUrl}}/users?keyword=bui
+Authorization: Bearer {{admin.response.body.data.token}}
+
+### 14. Lọc tài khoản đang bị khóa → HS2026010
+GET {{baseUrl}}/users?status=LOCKED
+Authorization: Bearer {{admin.response.body.data.token}}
+
+### 15. Tạo tài khoản Thủ thư mới → 201
+# @name newLibrarian
+POST {{baseUrl}}/users
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{
+  "username": "TT03",
+  "password": "Matkhau@123",
+  "role": "LIBRARIAN",
+  "fullName": "Lý Thu Hằng",
+  "email": "thuthu03@thptmau.edu.vn"
+}
+
+### 16. (7b) Gửi lại request 15 → 409 "Tên đăng nhập đã tồn tại"
+POST {{baseUrl}}/users
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "username": "TT03", "password": "Matkhau@123", "role": "LIBRARIAN", "fullName": "Lý Thu Hằng" }
+
+### 17. (7a) Mật khẩu ngắn → 400 "Mật khẩu tối thiểu 8 ký tự"
+POST {{baseUrl}}/users
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "username": "TT04", "password": "123", "role": "LIBRARIAN", "fullName": "Thử Mật Khẩu" }
+
+### 18. Cấp tài khoản cho độc giả đã có hồ sơ HS2026011 → 201, họ tên lấy từ hồ sơ
+POST {{baseUrl}}/users
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "username": "HS2026011", "password": "{{password}}", "role": "READER" }
+
+### 19. Cấp tài khoản cho mã độc giả chưa có hồ sơ → 404
+POST {{baseUrl}}/users
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "username": "HS9999999", "password": "{{password}}", "role": "READER" }
+
+### 20. Khóa tài khoản TT03 vừa tạo → 200, status = LOCKED
+###     (thử lại request đăng nhập TT03 ở dưới → 403)
+PATCH {{baseUrl}}/users/{{newLibrarian.response.body.data.userId}}/status
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "status": "LOCKED" }
+
+### 21. Đăng nhập TT03 khi đang bị khóa → 403
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT03", "password": "Matkhau@123" }
+
+### 22. Mở khóa TT03 → 200 (gửi lại request 21 sẽ ra 200)
+PATCH {{baseUrl}}/users/{{newLibrarian.response.body.data.userId}}/status
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "status": "ACTIVE" }
+
+### 23. Đặt lại mật khẩu TT03 → 200 (đăng nhập TT03 bằng mật khẩu mới)
+PATCH {{baseUrl}}/users/{{newLibrarian.response.body.data.userId}}/password
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "password": "MatKhauMoi@2026" }
+
+### 24. Đổi vai trò TT03 thành Admin → 200, role = ADMIN
+PATCH {{baseUrl}}/users/{{newLibrarian.response.body.data.userId}}/role
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "role": "ADMIN" }
+
+### 25. (7c) Admin tự khóa chính mình (AD001 có user_id = 1) → 409
+PATCH {{baseUrl}}/users/1/status
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "status": "LOCKED" }
+
+### 26. Đổi tài khoản độc giả sang Thủ thư (HS2026001 có user_id = 4) → 409
+PATCH {{baseUrl}}/users/4/role
+Authorization: Bearer {{admin.response.body.data.token}}
+Content-Type: application/json
+
+{ "role": "LIBRARIAN" }

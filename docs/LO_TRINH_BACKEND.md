@@ -160,17 +160,24 @@ router.use(authenticate, authorize(ROLES.LIBRARIAN));   // Thủ thư và Admin
 
 | Method | Endpoint | Quyền | Việc |
 |---|---|---|---|
-| GET | `/api/readers` | Thủ thư | Danh sách, tìm theo mã/tên/lớp |
-| GET | `/api/readers/:id` | Thủ thư | Chi tiết hồ sơ + thẻ |
-| POST | `/api/readers` | Thủ thư | Thêm hồ sơ (mã không trùng) |
-| PUT | `/api/readers/:id` | Thủ thư | Sửa hồ sơ |
-| POST | `/api/readers/:id/card` | Thủ thư | Cấp thẻ |
-| PATCH | `/api/readers/:id/card` | Thủ thư | Gia hạn / khóa / mở khóa thẻ |
+| GET | `/api/readers?keyword=&readerType=&page=&pageSize=` | Thủ thư | Danh sách, tìm theo mã/tên/lớp/tổ bộ môn (không dấu) |
+| GET | `/api/readers/:id` | Thủ thư | Chi tiết hồ sơ + tài khoản + thẻ |
+| POST | `/api/readers` | Thủ thư | Thêm hồ sơ. Body: `readerCode`, `fullName`, `readerType`, `className`, `department`, `email`, `dateOfBirth` |
+| PUT | `/api/readers/:id` | Thủ thư | Sửa hồ sơ (cùng body, trừ `readerCode`) |
+| POST | `/api/readers/:id/card` | Thủ thư | Cấp thẻ. Body: `expiryDate`, `issuedDate` (mặc định hôm nay) |
+| PATCH | `/api/readers/:id/card/expiry` | Thủ thư | Gia hạn thẻ. Body: `{ "expiryDate": "YYYY-MM-DD" }` |
+| PATCH | `/api/readers/:id/card/status` | Thủ thư | Khóa / mở khóa thẻ. Body: `{ "status": "LOCKED" \| "ACTIVE" }` |
 
-- [ ] Kiểm tra ngày hết hạn thẻ phải sau ngày cấp (7c)
-- [ ] Trạng thái "Hết hạn" tính từ ngày hết hạn, không lưu cứng (quyết định 9)
+- [x] Mã độc giả không trùng (7b), tự viết hoa, **không sửa được** sau khi tạo (là tên đăng nhập của tài khoản độc giả)
+- [x] Học sinh chỉ lưu lớp, giáo viên chỉ lưu tổ bộ môn
+- [x] Sửa họ tên / email hồ sơ thì tài khoản liên kết đổi theo
+- [x] Ngày hết hạn thẻ phải sau ngày cấp (7c); gia hạn thì ngày mới phải sau hôm nay
+- [x] `card.status` trả về là trạng thái thực tế: `ACTIVE` / `EXPIRED` (tính từ ngày hết hạn) / `LOCKED` (quyết định 9)
+- [x] Test: `tests/readers.test.js` (8 test); thử tay: `requests/gd3-readers.http`
 
 **Xong khi:** thêm, sửa, tìm độc giả và cấp, gia hạn, khóa thẻ đúng các luồng lỗi trong đặc tả.
+
+**Trạng thái:** xong.
 
 ---
 

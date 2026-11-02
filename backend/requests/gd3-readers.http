@@ -1,0 +1,171 @@
+### =====================================================================
+### Thử tay GĐ3 – Hồ sơ độc giả & thẻ thư viện (UC003)
+###
+### Cách dùng: giống gd2-auth.http (extension REST Client, chạy npm run dev,
+### bấm "Send Request" theo thứ tự từ trên xuống).
+### Muốn chạy lại từ đầu: npm run db:reset
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Đăng nhập Thủ thư
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "Thuvien@2026" }
+
+###
+@token = {{login.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### TÌM VÀ XEM ĐỘC GIẢ (bước 2–3)
+### ---------------------------------------------------------------------
+
+### 2. Danh sách độc giả → total = 14, mỗi dòng có account và card
+GET {{baseUrl}}/readers?pageSize=100
+Authorization: Bearer {{token}}
+
+### 3. Tìm theo lớp "10A1" → HS2026001, HS2026002
+GET {{baseUrl}}/readers?keyword=10A1
+Authorization: Bearer {{token}}
+
+### 4. Tìm không dấu "thao" → Mai Phương Thảo (HS2026011, chưa có tài khoản: account = null)
+GET {{baseUrl}}/readers?keyword=thao
+Authorization: Bearer {{token}}
+
+### 5. Chỉ giáo viên → 3 người, có department (tổ bộ môn)
+GET {{baseUrl}}/readers?readerType=TEACHER
+Authorization: Bearer {{token}}
+
+### 6. (3a) Không có ai phù hợp → total = 0 (giao diện hiện "Không tìm thấy độc giả")
+GET {{baseUrl}}/readers?keyword=khongcoai
+Authorization: Bearer {{token}}
+
+### 7. Chi tiết HS2026007 → card.status = EXPIRED (tính từ ngày hết hạn)
+GET {{baseUrl}}/readers/7
+Authorization: Bearer {{token}}
+
+### 8. Chi tiết HS2026009 → card.status = LOCKED
+GET {{baseUrl}}/readers/9
+Authorization: Bearer {{token}}
+
+
+### ---------------------------------------------------------------------
+### THÊM / SỬA HỒ SƠ (bước 4–9)
+### ---------------------------------------------------------------------
+
+### 9. Thêm học sinh mới → 201, mã tự viết hoa HS2026012, card = null, account = null
+# @name created
+POST {{baseUrl}}/readers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "readerCode": "hs2026012",
+  "fullName": "Trương Bảo Ngọc",
+  "readerType": "STUDENT",
+  "className": "11A3",
+  "email": "ngoc.truong@student.thptmau.edu.vn",
+  "dateOfBirth": "2009-04-01"
+}
+
+### 10. (7b) Gửi lại request 9 → 409 "Mã độc giả đã tồn tại"
+POST {{baseUrl}}/readers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026012", "fullName": "Trùng Mã", "readerType": "STUDENT" }
+
+### 11. (7a) Thiếu họ tên → 400 "Cần nhập họ và tên"
+POST {{baseUrl}}/readers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026013", "fullName": "", "readerType": "STUDENT" }
+
+### 12. (7a) Email sai → 400 "Email không đúng định dạng"
+POST {{baseUrl}}/readers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026013", "fullName": "Thử Email", "readerType": "STUDENT", "email": "abc" }
+
+### 13. Thêm giáo viên → 201, lưu department, className = null
+POST {{baseUrl}}/readers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "GV2026004", "fullName": "Phan Văn Hùng", "readerType": "TEACHER", "department": "Tổ Vật lí" }
+
+### 14. Sửa hồ sơ HS2026001 (reader_id = 1) → 200; họ tên tài khoản HS2026001 đổi theo
+###     readerCode gửi lên bị bỏ qua: mã độc giả không sửa được
+PUT {{baseUrl}}/readers/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "DOIMA", "fullName": "Lê Minh An Khang", "readerType": "STUDENT", "className": "10A2" }
+
+
+### ---------------------------------------------------------------------
+### THẺ THƯ VIỆN
+### ---------------------------------------------------------------------
+
+### 15. (7c) Cấp thẻ với ngày hết hạn trước ngày cấp → 400 "Ngày hết hạn thẻ phải sau ngày cấp"
+POST {{baseUrl}}/readers/{{created.response.body.data.readerId}}/card
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "issuedDate": "2026-09-01", "expiryDate": "2026-08-01" }
+
+### 16. Cấp thẻ cho độc giả vừa thêm (ngày cấp mặc định hôm nay) → 201, card.status = ACTIVE
+POST {{baseUrl}}/readers/{{created.response.body.data.readerId}}/card
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "expiryDate": "2027-05-31" }
+
+### 17. Cấp thẻ lần 2 → 409
+POST {{baseUrl}}/readers/{{created.response.body.data.readerId}}/card
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "expiryDate": "2027-12-31" }
+
+### 18. Gia hạn thẻ đã hết hạn của HS2026007 → 200, card.status chuyển ACTIVE
+PATCH {{baseUrl}}/readers/7/card/expiry
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "expiryDate": "2027-05-31" }
+
+### 19. Khóa thẻ HS2026001 → 200, card.status = LOCKED (sau này bị chặn lập phiếu ở UC007)
+PATCH {{baseUrl}}/readers/1/card/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "LOCKED" }
+
+### 20. Mở khóa thẻ HS2026001 → 200, card.status = ACTIVE
+PATCH {{baseUrl}}/readers/1/card/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "ACTIVE" }
+
+
+### ---------------------------------------------------------------------
+### PHÂN QUYỀN
+### ---------------------------------------------------------------------
+
+### 21. Đăng nhập độc giả
+# @name readerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "HS2026002", "password": "Thuvien@2026" }
+
+### 22. Độc giả gọi UC003 → 403
+GET {{baseUrl}}/readers
+Authorization: Bearer {{readerLogin.response.body.data.token}}

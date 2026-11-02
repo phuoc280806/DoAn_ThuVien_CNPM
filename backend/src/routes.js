@@ -17,7 +17,7 @@ router.get('/health', async (req, res) => {
   }
 });
 
-// Gắn route của từng module tại đây, ví dụ:
-// router.use('/auth', require('./modules/auth/auth.routes'));
+router.use('/auth', require('./modules/auth/auth.routes'));
+router.use('/users', require('./modules/users/users.routes'));
 
 module.exports = router;

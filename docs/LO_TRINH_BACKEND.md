@@ -124,18 +124,33 @@ Dữ liệu mẫu (`seed.sql`): 3 tài khoản nhân viên, 14 độc giả (1 n
 | POST | `/api/auth/login` | Tất cả | Đăng nhập, trả JWT + thông tin vai trò |
 | POST | `/api/auth/logout` | Đã đăng nhập | Đăng xuất (phía client xóa token) |
 | GET | `/api/auth/me` | Đã đăng nhập | Thông tin tài khoản hiện tại |
-| GET | `/api/users` | Admin | Danh sách, tìm theo mã/tên |
-| POST | `/api/users` | Admin | Tạo tài khoản |
-| PATCH | `/api/users/:id/status` | Admin | Khóa / mở khóa |
-| PATCH | `/api/users/:id/password` | Admin | Đặt lại mật khẩu |
-| PATCH | `/api/users/:id/role` | Admin | Gán / đổi vai trò |
+| GET | `/api/users?keyword=&role=&status=&page=&pageSize=` | Admin | Danh sách, tìm theo mã/tên đăng nhập/họ tên/mã độc giả |
+| GET | `/api/users/:id` | Admin | Chi tiết tài khoản |
+| POST | `/api/users` | Admin | Tạo tài khoản. Body: `username`, `password`, `role`, `fullName`, `email`, `phone`. Với `role: READER`, `username` là mã độc giả đã có hồ sơ; họ tên và email lấy từ hồ sơ |
+| PATCH | `/api/users/:id/status` | Admin | Khóa / mở khóa. Body: `{ "status": "LOCKED" \| "ACTIVE" }` |
+| PATCH | `/api/users/:id/password` | Admin | Đặt lại mật khẩu. Body: `{ "password": "..." }` |
+| PATCH | `/api/users/:id/role` | Admin | Đổi vai trò giữa `LIBRARIAN` và `ADMIN`. Tài khoản độc giả giữ `READER` (HS/GV nằm ở hồ sơ độc giả) |
 
-- [ ] Middleware `auth` (kiểm tra JWT) và `authorize(...roles)`
-- [ ] Không phân biệt sai tên đăng nhập hay sai mật khẩu (UC001 6a); tài khoản khóa thì không đăng nhập được (7a)
-- [ ] Không cho Admin tự khóa hoặc tự hạ vai trò chính mình, không khóa Admin duy nhất (UC002 7c)
-- [ ] Ghi `audit_logs` cho mọi thao tác ở UC002
+- [x] Middleware `authenticate` (kiểm tra JWT) và `authorize(...roles)` trong `src/middlewares/auth.js`; `authorize(ROLES.LIBRARIAN)` tự cho Admin đi qua
+- [x] Middleware `validate` dùng với `express-validator`; controller lấy dữ liệu bằng `matchedData(req)`
+- [x] Không phân biệt sai tên đăng nhập hay sai mật khẩu (UC001 6a); tài khoản khóa thì không đăng nhập được (7a)
+- [x] Không cho Admin tự khóa hoặc tự hạ vai trò chính mình, không khóa Admin duy nhất (UC002 7c)
+- [x] Ghi `audit_logs` cho mọi thao tác ở UC002, cùng transaction với thao tác chính (`src/utils/audit.js`)
+- [x] Test tự động: `tests/auth.test.js`, `tests/users.test.js` (15 test)
 
 **Xong khi:** đăng nhập được bằng tài khoản seed; gọi API của Admin bằng token Thủ thư bị trả `403`.
+
+**Trạng thái:** xong. Token hết hạn theo `JWT_EXPIRES_IN` (mặc định 1 ngày); khóa tài khoản có hiệu lực từ lần đăng nhập kế tiếp, đúng hậu điều kiện UC002.
+
+**Cách dùng cho các module sau:**
+
+```js
+const { authenticate, authorize } = require('../../middlewares/auth');
+const ROLES = require('../../constants/roles');
+
+router.use(authenticate, authorize(ROLES.LIBRARIAN));   // Thủ thư và Admin
+// trong controller: req.user = { userId, username, role, readerId }
+```
 
 ---
 

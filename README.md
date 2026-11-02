@@ -131,6 +131,9 @@ npm run db:reset
 # 3. Chạy backend (http://localhost:5000)
 npm run dev               # kiểm tra: mở http://localhost:5000/api/health
 
+# Chạy test tự động (dùng database riêng thuvien_thpt_test, không ảnh hưởng dữ liệu đang dùng)
+npm test
+
 # 4. Frontend (http://localhost:5173) – chưa có
 cd ../frontend
 cp .env.example .env

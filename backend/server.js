@@ -1,5 +1,10 @@
 require('dotenv').config({ quiet: true });
 
+if (!process.env.JWT_SECRET) {
+  console.error('Thiếu JWT_SECRET trong file .env (xem .env.example)');
+  process.exit(1);
+}
+
 const app = require('./src/app');
 const { pool } = require('./src/config/db');
 

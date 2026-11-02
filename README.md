@@ -160,7 +160,9 @@ Mật khẩu chung: `Thuvien@2026`
 | `HS2026010` | Học sinh | Tài khoản bị khóa |
 | `GV2026001` – `GV2026003` | Giáo viên | Đang mượn / có lịch sử nộp phạt / không mượn gì |
 
-Chi tiết từng tình huống ghi ở đầu file `database/seed.sql`.
+Độc giả `HS2026011` có hồ sơ và thẻ nhưng chưa có tài khoản (thử Admin cấp tài khoản ở UC002). Chi tiết từng tình huống ghi ở đầu file `database/seed.sql`.
+
+File `database/test_borrow_return.sql` diễn tập bằng SQL cả luồng mượn → gia hạn → trả trễ → thu phạt → đổi quy định. Mở trong MySQL Workbench, chạy từng khối và so với dòng `Kỳ vọng` ghi bên dưới mỗi khối.
 
 ## Hướng dẫn sử dụng Git
 

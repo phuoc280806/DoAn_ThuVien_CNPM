@@ -33,7 +33,7 @@ Các điểm đặc tả chưa nói rõ hoặc mâu thuẫn, nhóm đã thống 
 |---|---|---|
 | 1 | Chưa có use case tạo bản sách | Thêm "nhập N bản" khi thêm/sửa đầu sách; mã bản sách tự sinh `BS000001`… |
 | 2 | Hạn mượn | 7 ngày cho cả học sinh và giáo viên (dữ liệu mặc định); Admin đổi được qua UC013 |
-| 3 | Liên kết tài khoản và hồ sơ độc giả | Tên đăng nhập = mã độc giả; tài khoản có cột `reader_id` trỏ tới hồ sơ |
+| 3 | Liên kết tài khoản và hồ sơ độc giả | Tên đăng nhập = mã độc giả; hồ sơ `readers` có cột `user_id` trỏ tới tài khoản, để trống khi Admin chưa cấp tài khoản |
 | 4 | Gia hạn theo từng cuốn | Hạn trả và số lần gia hạn lưu ở **từng cuốn trong phiếu**; snapshot quy định lưu ở **phiếu** |
 | 5 | Danh sách thể loại | Bảng `categories` có dữ liệu sẵn, không làm màn hình quản lý |
 | 6 | Đổi trạng thái bản sách | Khả dụng ↔ Hư hỏng; Khả dụng/Hư hỏng → Mất; Mất → Khả dụng. "Đang mượn" chỉ đổi qua lập phiếu (UC007) và trả sách (UC009) |
@@ -51,7 +51,7 @@ Các điểm đặc tả chưa nói rõ hoặc mâu thuẫn, nhóm đã thống 
 - Response thành công: `{ "success": true, "data": ..., "message": "..." }`
 - Response lỗi: `{ "success": false, "message": "Đã mượn 3/3 cuốn", "errors": [...] }`, dùng đúng câu thông báo trong đặc tả.
 - Mã HTTP: `200/201` thành công, `400` dữ liệu sai, `401` chưa đăng nhập, `403` không đủ quyền, `404` không tìm thấy, `409` trùng hoặc vi phạm quy tắc nghiệp vụ, `500` lỗi server.
-- Phân quyền theo vai trò: `STUDENT`, `TEACHER` (gọi chung là độc giả), `LIBRARIAN`, `ADMIN`. Admin có mọi quyền của Thủ thư.
+- Phân quyền theo vai trò (bảng `roles`): `READER`, `LIBRARIAN`, `ADMIN`. Admin có mọi quyền của Thủ thư. Học sinh hay giáo viên phân biệt bằng `readers.reader_type`, dùng để chọn quy định.
 - Thao tác ghi vào nhiều bảng cùng lúc phải chạy trong **transaction**: lập phiếu, trả sách, thu phạt, áp dụng quy định cho phiếu đang mượn.
 
 ---
@@ -77,36 +77,41 @@ Express 5 tự chuyển lỗi của hàm `async` sang `errorHandler`, nên contr
 
 **Mục tiêu:** có `database/schema.sql` và `database/seed.sql`. Đây cũng là nguồn để vẽ ERD cho mục 3.4 và 4.2 của tiểu luận.
 
-Các bảng dự kiến:
+Phát triển từ database `library_management` nhóm làm trước đó (giữ tên bảng, tên cột, bảng `roles`, tách `users` / `readers`, `location`, `description`), bổ sung theo đặc tả. Database tên `thuvien_thpt`.
 
 | Bảng | Nội dung chính | Use case |
 |---|---|---|
-| `accounts` | tên đăng nhập, mật khẩu (đã băm), họ tên, vai trò, trạng thái, `reader_id` | UC001, UC002 |
-| `readers` | mã độc giả, họ tên, loại (HS/GV), lớp/tổ, email | UC003 |
-| `library_cards` | độc giả, ngày cấp, ngày hết hạn, trạng thái (hoạt động/khóa) | UC003 |
-| `categories` | tên thể loại | UC004 |
-| `book_titles` | ISBN, tên, tác giả, thể loại, NXB, năm, cờ ẩn | UC004, UC006 |
-| `book_copies` | mã bản sách, đầu sách, trạng thái, ghi chú | UC005 |
+| `roles` | `READER`, `LIBRARIAN`, `ADMIN` | UC001, UC002 |
+| `users` | tên đăng nhập, mật khẩu (đã băm), họ tên, email, SĐT, vai trò, trạng thái (ACTIVE/LOCKED) | UC001, UC002 |
+| `readers` | `user_id` (để trống khi chưa có tài khoản), mã độc giả, họ tên, loại (HS/GV), lớp, tổ bộ môn, email, ngày sinh | UC003 |
+| `library_cards` | độc giả, ngày cấp, ngày hết hạn, trạng thái (ACTIVE/LOCKED) | UC003 |
+| `categories` | tên, mô tả | UC004 |
+| `books` | ISBN, tên, tác giả, NXB, năm, thể loại, mô tả, cờ ẩn | UC004, UC006 |
+| `book_copies` | mã bản sách, đầu sách, trạng thái, vị trí kệ, ghi chú | UC005 |
 | `copy_status_logs` | bản sách, trạng thái cũ → mới, lý do, người đổi, thời điểm | UC005 |
-| `regulation_versions` | loại độc giả, số sách tối đa, số ngày mượn, phạt/ngày, phạt tối đa, số ngày gia hạn, ngày hiệu lực | UC013 |
-| `regulation_logs` | loại thay đổi, giá trị cũ/mới, ngày hiệu lực, lý do, người đổi, thời điểm | UC014, UC015 |
-| `loans` | mã phiếu, độc giả, thủ thư, ngày lập, trạng thái, **snapshot**: số ngày mượn, phạt/ngày, phạt tối đa, số ngày gia hạn | UC007 |
-| `loan_items` | phiếu, bản sách, **hạn trả**, số lần gia hạn, ngày trả, tình trạng khi trả, ghi chú, số ngày trễ, tiền phạt | UC007–UC010 |
+| `regulations` | **loại độc giả**, số sách tối đa, số ngày mượn, phạt/ngày, **phạt tối đa**, **số ngày gia hạn**, ngày hiệu lực | UC013 |
+| `regulation_logs` | loại thay đổi, giá trị cũ/mới (JSON), ngày hiệu lực, lý do, người đổi, thời điểm | UC014, UC015 |
+| `borrow_tickets` | độc giả, thủ thư, quy định áp dụng, ngày lập, trạng thái, **snapshot**: `snap_borrow_days`, `snap_fine_per_day`, `snap_max_fine_per_book`, `snap_renew_days` | UC007 |
+| `borrow_details` | phiếu, bản sách, **hạn trả**, số lần gia hạn, ngày trả, tình trạng khi trả, ghi chú, số ngày trễ, tiền phạt, người nhận | UC007–UC010 |
 | `renewal_logs` | cuốn trong phiếu, hạn cũ, hạn mới, người gia hạn, thời điểm | UC008 |
-| `fines` | mã khoản phạt, cuốn trong phiếu, độc giả, số tiền, trạng thái (chưa thu/đã thu) | UC009, UC011 |
-| `receipts` | mã biên lai, khoản phạt, số tiền, người thu, thời điểm thu | UC011 |
+| `ticket_snapshot_changes` | snapshot cũ/mới của từng phiếu khi Admin áp dụng quy định cho phiếu đang mượn | UC015 |
+| `fines` | cuốn trong phiếu, độc giả, số ngày trễ, số tiền, trạng thái, thời điểm thu, **người thu** (biên lai lấy từ chính dòng này) | UC009, UC011 |
 | `audit_logs` | thao tác quản trị tài khoản, truy cập trái phép | UC002, UC012 |
-| `reminder_logs` | phiếu, email, thời điểm, người gửi, kết quả | UC017 |
+| `reminder_logs` | cuốn trong phiếu, email, thời điểm, người gửi, kết quả | UC017 |
 
-Dữ liệu mẫu (`seed.sql`):
-- 1 Admin, 2 Thủ thư, vài học sinh và giáo viên (kèm tài khoản và thẻ)
-- Quy định mặc định cho HS và GV: số sách 3/5, **7 ngày**, 1.000đ/ngày, tối đa 30.000đ, gia hạn 7/14 ngày
-- Danh sách thể loại, khoảng 20 đầu sách, mỗi đầu sách vài bản
-- Dữ liệu để thử các tình huống TH1–TH6: một độc giả đang mượn 3/3 cuốn, một độc giả còn nợ phạt, một phiếu đã quá hạn
+Quy ước khi viết backend:
+- **Quá hạn không lưu thành trạng thái**: một cuốn quá hạn khi `return_date IS NULL AND due_date < hôm nay`.
+- **Đang mượn** = `borrow_details.return_date IS NULL`.
+- **Mã hiển thị** sinh từ id, không lưu cột riêng: phiếu `PM` + id, biên lai `BL` + fine_id (ví dụ `PM000009`, `BL000002`). Riêng bản sách có cột `copy_code` (`BS000001`) vì được dán lên sách và quét.
+- **Tiền** lưu kiểu `INT` (đồng), không dùng `DECIMAL`.
+
+Dữ liệu mẫu (`seed.sql`): 3 tài khoản nhân viên, 14 độc giả (1 người chưa có tài khoản), 13 đầu sách × 3 bản, 4 quy định (cũ và hiện hành cho HS/GV), 8 phiếu mượn phủ TH1–TH6. Ngày tính lùi từ `CURDATE()`.
+
+`test_borrow_return.sql`: diễn tập bằng SQL toàn bộ luồng lập phiếu → gia hạn → trả trễ → thu phạt → đổi quy định giữa chừng, kèm truy vấn báo cáo. Mỗi khối là việc một API sẽ làm.
 
 **Xong khi:** import `schema.sql` và `seed.sql` vào MySQL không lỗi; cả nhóm duyệt sơ đồ bảng.
 
-**Trạng thái:** đã viết xong và chạy thử (`npm run db:reset`), dữ liệu mẫu khớp TH1–TH6, các ràng buộc trong DB chặn đúng dữ liệu sai. Chờ cả nhóm duyệt. Bảng thực tế có thêm `loan_snapshot_changes` (lưu snapshot cũ/mới của từng phiếu khi chạy UC015).
+**Trạng thái:** đã chạy thử (`npm run db:reset`); toàn bộ `test_borrow_return.sql` chạy ra đúng kết quả mong đợi; 11 loại dữ liệu sai đều bị ràng buộc trong DB chặn. Chờ cả nhóm duyệt.
 
 ---
 
@@ -213,7 +218,7 @@ Dữ liệu mẫu (`seed.sql`):
 
 - [ ] Kiểm tra điều kiện mượn: thẻ còn hiệu lực, tài khoản không khóa, không có sách quá hạn, không nợ phạt "Chưa thu", chưa vượt số sách (tính cả sách quá hạn)
 - [ ] Kiểm tra từng bản sách: tồn tại, đang Khả dụng, không vượt số cuốn còn được mượn
-- [ ] Trong **một transaction**: lấy quy định hiệu lực → tạo phiếu kèm snapshot → tạo các dòng `loan_items` với hạn trả = ngày lập + số ngày mượn → chuyển bản sách sang Đang mượn
+- [ ] Trong **một transaction**: lấy quy định hiệu lực → tạo phiếu kèm snapshot → tạo các dòng `borrow_details` với hạn trả = ngày lập + số ngày mượn → chuyển bản sách sang Đang mượn
 - [ ] Gia hạn: chưa quá hạn, chưa gia hạn lần nào; hạn mới = hạn cũ + số ngày gia hạn **trong snapshot**; ghi `renewal_logs`
 
 **Xong khi:** chạy đúng TH1 (mượn 2 cuốn), TH2 (đã 3/3 bị từ chối), TH5 (nợ phạt bị chặn); lỗi giữa chừng thì không có dữ liệu nào bị ghi.
@@ -230,7 +235,7 @@ Dữ liệu mẫu (`seed.sql`):
 | POST | `/api/returns` | Thủ thư | Xác nhận trả 1 cuốn (tình trạng, ghi chú) |
 | GET | `/api/fines?readerCode=&status=` | Thủ thư | Khoản phạt của độc giả |
 | POST | `/api/fines/:id/pay` | Thủ thư | Thu phạt, tạo biên lai |
-| GET | `/api/receipts/:id` | Thủ thư, độc giả sở hữu | Xem biên lai |
+| GET | `/api/fines/:id/receipt` | Thủ thư, độc giả sở hữu | Xem biên lai |
 | GET | `/api/me/loans` | Độc giả | Lịch sử của mình, lọc thời gian/trạng thái, tổng nợ chưa thu |
 | GET | `/api/me/loans/:id` | Độc giả | Chi tiết phiếu của mình |
 
@@ -297,4 +302,4 @@ Dữ liệu mẫu (`seed.sql`):
 | Thành viên D | GĐ5 → GĐ8 |
 | Thành viên E | Bắt đầu frontend khi GĐ2 xong; GĐ10 |
 
-GĐ6 và GĐ7 dùng chung bảng `loans` và `loan_items`, nên hai người phụ trách cần thống nhất trước tên cột và hàm dùng chung.
+GĐ6 và GĐ7 dùng chung bảng `borrow_tickets` và `borrow_details`, nên hai người phụ trách cần thống nhất trước tên cột và hàm dùng chung.

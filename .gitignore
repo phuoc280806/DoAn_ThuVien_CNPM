@@ -24,3 +24,6 @@ Thumbs.db
 
 # Claude Code (cấu hình cá nhân)
 .claude/
+
+# File thiết kế Figma (không đưa lên git)
+/figma/

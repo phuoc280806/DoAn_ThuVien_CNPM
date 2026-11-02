@@ -13,4 +13,9 @@ function addDays(date, days) {
   return d.toISOString().slice(0, 10);
 }
 
-module.exports = { todayVN, addDays };
+// Số ngày từ `from` đến `to`: diffDays('2026-10-10', '2026-10-15') → 5 (âm nếu `to` trước `from`)
+function diffDays(from, to) {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
+}
+
+module.exports = { todayVN, addDays, diffDays };

@@ -1,0 +1,152 @@
+### =====================================================================
+### Thử tay GĐ7 – Trả sách, tiền phạt, lịch sử (UC009, UC010, UC011, UC012)
+###
+### Cách dùng: giống gd2-auth.http (extension REST Client, chạy npm run dev,
+### bấm "Send Request" theo thứ tự từ trên xuống).
+### Muốn chạy lại từ đầu: npm run db:reset
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Đăng nhập Thủ thư
+# @name librarianLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "Thuvien@2026" }
+
+###
+@librarian = {{librarianLogin.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### UC009 + UC010 – TRẢ SÁCH, TÍNH PHẠT
+### ---------------------------------------------------------------------
+
+### 2. Quét BS000013 (HS2026004) → lateDays 5, fineAmount 5000
+GET {{baseUrl}}/returns/lookup/BS000013
+Authorization: Bearer {{librarian}}
+
+### 3. Quét BS000016 (HS2026006, phiếu theo quy định cũ 14 ngày) → trễ 45 ngày, phạt 30000 (mức tối đa)
+GET {{baseUrl}}/returns/lookup/BS000016
+Authorization: Bearer {{librarian}}
+
+### 4. (4a) Mã không tồn tại → 404 "Không tìm thấy bản sách"
+GET {{baseUrl}}/returns/lookup/BS999999
+Authorization: Bearer {{librarian}}
+
+### 5. (4b) Bản sách không đang mượn → 409 "Bản sách không ở trạng thái Đang mượn"
+GET {{baseUrl}}/returns/lookup/BS000005
+Authorization: Bearer {{librarian}}
+
+### 6. (TH3) Trả đúng hạn BS000010 → fine = null, ticketCompleted = true
+POST {{baseUrl}}/returns
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "copyCode": "BS000010", "condition": "GOOD" }
+
+### 7. (TH4) Trả trễ BS000013 → fine 5000 UNPAID, message "Trễ 5 ngày, tiền phạt 5.000đ"
+# @name lateReturn
+POST {{baseUrl}}/returns
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "copyCode": "BS000013", "condition": "GOOD" }
+
+### 8. HS2026004 giờ bị chặn vì nợ phạt (không còn sách quá hạn)
+GET {{baseUrl}}/loans/eligibility/HS2026004
+Authorization: Bearer {{librarian}}
+
+### 9. (7a) Báo mất mà không ghi chú → 400
+POST {{baseUrl}}/returns
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "copyCode": "BS000016", "condition": "LOST" }
+
+### 10. Báo mất có ghi chú → 200, vẫn tính phạt trễ 30000, bản sách chuyển LOST
+POST {{baseUrl}}/returns
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "copyCode": "BS000016", "condition": "LOST", "note": "Độc giả làm mất" }
+
+### 11. (11a) Phiếu PM000001 có 3 cuốn: trả 1 cuốn hư hỏng → ticketCompleted = false
+POST {{baseUrl}}/returns
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "copyCode": "BS000001", "condition": "DAMAGED", "note": "Rách bìa" }
+
+
+### ---------------------------------------------------------------------
+### UC011 – THU TIỀN PHẠT
+### ---------------------------------------------------------------------
+
+### 12. (1a) Khoản phạt của HS2026004 → unpaidTotal 5000
+GET {{baseUrl}}/fines?readerCode=HS2026004
+Authorization: Bearer {{librarian}}
+
+### 13. Thu khoản phạt vừa tạo ở request 7 → receipt (BL...), remainingUnpaid 0
+POST {{baseUrl}}/fines/{{lateReturn.response.body.data.fine.fineId}}/pay
+Authorization: Bearer {{librarian}}
+
+### 14. Thu lại lần 2 → 409 "Khoản phạt này đã được thu"
+POST {{baseUrl}}/fines/{{lateReturn.response.body.data.fine.fineId}}/pay
+Authorization: Bearer {{librarian}}
+
+### 15. HS2026004 được mượn lại → eligible = true
+GET {{baseUrl}}/loans/eligibility/HS2026004
+Authorization: Bearer {{librarian}}
+
+### 16. Xem lại biên lai
+GET {{baseUrl}}/fines/{{lateReturn.response.body.data.fine.fineId}}/receipt
+Authorization: Bearer {{librarian}}
+
+### 17. Mọi khoản phạt chưa thu
+GET {{baseUrl}}/fines?status=UNPAID
+Authorization: Bearer {{librarian}}
+
+
+### ---------------------------------------------------------------------
+### UC012 – LỊCH SỬ CỦA ĐỘC GIẢ (đăng nhập bằng tài khoản độc giả)
+### ---------------------------------------------------------------------
+
+### 18. Đăng nhập GV2026002
+# @name readerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "GV2026002", "password": "Thuvien@2026" }
+
+###
+@reader = {{readerLogin.response.body.data.token}}
+
+### 19. Lịch sử của tôi → 2 cuốn đã trả, 1 cuốn phạt 4000 đã thu (BL000002)
+GET {{baseUrl}}/me/loans
+Authorization: Bearer {{reader}}
+
+### 20. Lọc chỉ sách đã trả
+GET {{baseUrl}}/me/loans?status=RETURNED
+Authorization: Bearer {{reader}}
+
+### 21. (5a) Từ ngày lớn hơn đến ngày → 400
+GET {{baseUrl}}/me/loans?from=2026-10-10&to=2026-10-01
+Authorization: Bearer {{reader}}
+
+### 22. Chi tiết phiếu của mình PM000007 → 200
+GET {{baseUrl}}/me/loans/7
+Authorization: Bearer {{reader}}
+
+### 23. (7a) Xem phiếu của người khác PM000001 → 403, ghi audit_logs
+GET {{baseUrl}}/me/loans/1
+Authorization: Bearer {{reader}}
+
+### 24. Xem biên lai của chính mình
+GET {{baseUrl}}/fines/2/receipt
+Authorization: Bearer {{reader}}
+
+### 25. Thủ thư gọi /me/loans → 403 (chỉ độc giả)
+GET {{baseUrl}}/me/loans
+Authorization: Bearer {{librarian}}

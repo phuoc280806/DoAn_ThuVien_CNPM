@@ -25,5 +25,8 @@ router.use('/books', require('./modules/books/books.routes'));
 router.use('/copies', require('./modules/copies/copies.routes'));
 router.use('/regulations', require('./modules/regulations/regulations.routes'));
 router.use('/loans', require('./modules/loans/loans.routes'));
+router.use('/returns', require('./modules/returns/returns.routes'));
+router.use('/fines', require('./modules/fines/fines.routes'));
+router.use('/me', require('./modules/readers/me.routes'));
 
 module.exports = router;

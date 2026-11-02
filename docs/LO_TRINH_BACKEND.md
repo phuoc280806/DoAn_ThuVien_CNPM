@@ -271,21 +271,25 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 
 | Method | Endpoint | Quyền | Việc |
 |---|---|---|---|
-| GET | `/api/returns/lookup/:copyCode` | Thủ thư | Tìm phiếu đang mở theo mã bản sách, tính trước số ngày trễ và tiền phạt |
-| POST | `/api/returns` | Thủ thư | Xác nhận trả 1 cuốn (tình trạng, ghi chú) |
-| GET | `/api/fines?readerCode=&status=` | Thủ thư | Khoản phạt của độc giả |
-| POST | `/api/fines/:id/pay` | Thủ thư | Thu phạt, tạo biên lai |
-| GET | `/api/fines/:id/receipt` | Thủ thư, độc giả sở hữu | Xem biên lai |
-| GET | `/api/me/loans` | Độc giả | Lịch sử của mình, lọc thời gian/trạng thái, tổng nợ chưa thu |
-| GET | `/api/me/loans/:id` | Độc giả | Chi tiết phiếu của mình |
+| GET | `/api/returns/lookup/:copyCode` | Thủ thư | Tìm cuốn đang mượn theo mã bản sách, tính trước số ngày trễ và tiền phạt nếu trả hôm nay |
+| POST | `/api/returns` | Thủ thư | Xác nhận trả 1 cuốn. Body: `{ "copyCode": "BS000013", "condition": "GOOD" \| "DAMAGED" \| "LOST", "note": "..." }`. Có phạt thì trả về `fine` để chuyển sang thu phạt |
+| GET | `/api/fines?readerCode=&status=&page=&pageSize=` | Thủ thư | Khoản phạt; có `readerCode` thì kèm `unpaidTotal` |
+| POST | `/api/fines/:id/pay` | Thủ thư | Thu phạt → trả `receipt` (biên lai) và `remainingUnpaid` |
+| GET | `/api/fines/:id/receipt` | Thủ thư, độc giả sở hữu | Xem / in lại biên lai |
+| GET | `/api/me/loans?from=&to=&status=` | Độc giả | Lịch sử của mình (mỗi dòng một cuốn), `status`: `BORROWING` / `OVERDUE` / `RETURNED`, kèm `unpaidTotal` |
+| GET | `/api/me/loans/:id` | Độc giả | Chi tiết phiếu của mình, kèm trạng thái thu phạt và mã biên lai |
 
-- [ ] `src/utils/fine.js`: `F = min(d × p × n ; T × n)`, lấy p, T **từ snapshot** của phiếu; snapshot thiếu thì báo lỗi, không dùng quy định hiện hành (UC010 2a)
-- [ ] Viết unit test cho hàm tính phạt theo đúng các ví dụ ở Bảng 2.33
-- [ ] Trả sách trong một transaction: lưu ngày trả, tình trạng, tiền phạt → đổi trạng thái bản sách → tạo khoản phạt "Chưa thu" nếu > 0 → đóng phiếu khi đã trả hết
-- [ ] Hư hỏng / Mất bắt buộc có ghi chú; Mất vẫn tính phạt trễ (quyết định 8)
-- [ ] `/api/me/...` lấy mã độc giả từ token; xem phiếu không phải của mình thì trả `403` và ghi `audit_logs`
+- [x] `src/utils/fine.js`: `F = min(d × p × n ; T × n)`, lấy p, T **từ snapshot** của phiếu; thiếu snapshot thì báo lỗi, không dùng quy định hiện hành (UC010 2a)
+- [x] Unit test hàm tính phạt theo đúng các ví dụ ở Bảng 2.33
+- [x] Trả sách trong một transaction: lưu ngày trả, tình trạng, tiền phạt, người nhận → đổi trạng thái bản sách (ghi `copy_status_logs`) → tạo khoản phạt "Chưa thu" nếu > 0 → đóng phiếu khi đã trả hết
+- [x] Hư hỏng / Mất bắt buộc có ghi chú (7a); Mất vẫn tính phạt trễ (quyết định 8); 4a không có bản sách, 4b bản sách không đang mượn
+- [x] Thu phạt: chặn thu 2 lần; trả về số nợ còn lại (7a); biên lai = mã `BL` + `fine_id`, người thu, thời điểm thu
+- [x] `/api/me/...` lấy mã độc giả từ token; 3a chưa có giao dịch, 5a khoảng thời gian sai, 5b không có kết quả; xem phiếu / biên lai của người khác trả `403` và ghi `audit_logs` (7a)
+- [x] Test: `tests/returns.test.js` (10 test), `tests/history.test.js` (5 test); thử tay: `requests/gd7-returns.http`
 
 **Xong khi:** chạy đúng TH3 (trả đúng hạn, phạt 0), TH4 (trễ 5 ngày → 5.000đ, trễ 45 ngày → 30.000đ); thu phạt xong thì độc giả mượn lại được.
+
+**Trạng thái:** xong.
 
 ---
 

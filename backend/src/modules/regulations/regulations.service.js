@@ -8,13 +8,19 @@ const READER_TYPES = ['STUDENT', 'TEACHER'];
 const TYPE_LABEL = { STUDENT: 'học sinh', TEACHER: 'giáo viên' };
 
 /**
- * Quy định hiệu lực của một loại độc giả tại một ngày (mặc định hôm nay).
- * Dùng ở UC007 khi lập phiếu để lấy snapshot. Chưa cấu hình thì báo lỗi (UC007 10a).
+ * Quy định hiệu lực của một loại độc giả tại một ngày (mặc định hôm nay); null nếu chưa cấu hình.
+ * Dùng ở UC007 khi lập phiếu để lấy snapshot.
  */
-async function getEffective(readerType, date = todayVN(), db = pool) {
+async function findEffective(readerType, date = todayVN(), db = pool) {
   const row = await repo.findEffective(readerType, date, db);
-  if (!row) throw new AppError(409, 'Chưa cấu hình quy định cho vai trò này');
-  return toRegulationDto(row);
+  return row ? toRegulationDto(row) : null;
+}
+
+// Như findEffective nhưng báo lỗi khi chưa cấu hình (UC007 10a)
+async function getEffective(readerType, date = todayVN(), db = pool) {
+  const regulation = await findEffective(readerType, date, db);
+  if (!regulation) throw new AppError(409, 'Chưa cấu hình quy định cho vai trò này');
+  return regulation;
 }
 
 // UC013 bước 2 – Quy định đang hiệu lực và các phiên bản (đã / đang / sắp hiệu lực) theo từng loại độc giả
@@ -103,4 +109,4 @@ async function listLogs({ from, to, readerType, changedBy, page = 1, pageSize = 
   return { items: rows.map(toLogDto), page, pageSize, total };
 }
 
-module.exports = { getEffective, overview, create, listLogs };
+module.exports = { findEffective, getEffective, overview, create, listLogs };

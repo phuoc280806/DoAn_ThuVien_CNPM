@@ -246,18 +246,22 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 
 | Method | Endpoint | Quyền | Việc |
 |---|---|---|---|
-| GET | `/api/loans/eligibility/:readerCode` | Thủ thư | Hồ sơ độc giả, sách đang mượn, nợ phạt, số cuốn còn được mượn |
-| POST | `/api/loans` | Thủ thư | Lập phiếu với danh sách mã bản sách |
-| GET | `/api/loans/:id` | Thủ thư | Xem / in phiếu |
-| GET | `/api/loans/active?readerCode=&copyCode=` | Thủ thư | Sách đang mượn để chọn gia hạn |
-| POST | `/api/loan-items/:id/renew` | Thủ thư | Gia hạn 1 cuốn |
+| GET | `/api/loans/eligibility/:readerCode` | Thủ thư | Hồ sơ độc giả, quy định áp dụng, sách đang mượn, nợ phạt, `eligible`, `problems[]`, `summary` ("Đã mượn 1/3, còn được mượn 2") |
+| POST | `/api/loans` | Thủ thư | Lập phiếu. Body: `{ "readerCode": "HS2026001", "copyCodes": ["BS000005", "BS000014"] }` |
+| GET | `/api/loans/:id` | Thủ thư | Xem / in phiếu (kèm snapshot và từng cuốn) |
+| GET | `/api/loans/active?readerCode=` hoặc `?copyCode=` | Thủ thư | Sách đang mượn, kèm `canRenew`, `renewBlockedReason`, `newDueDate` |
+| POST | `/api/loans/items/:borrowDetailId/renew` | Thủ thư | Gia hạn 1 cuốn |
 
-- [ ] Kiểm tra điều kiện mượn: thẻ còn hiệu lực, tài khoản không khóa, không có sách quá hạn, không nợ phạt "Chưa thu", chưa vượt số sách (tính cả sách quá hạn)
-- [ ] Kiểm tra từng bản sách: tồn tại, đang Khả dụng, không vượt số cuốn còn được mượn
-- [ ] Trong **một transaction**: lấy quy định hiệu lực → tạo phiếu kèm snapshot → tạo các dòng `borrow_details` với hạn trả = ngày lập + số ngày mượn → chuyển bản sách sang Đang mượn
-- [ ] Gia hạn: chưa quá hạn, chưa gia hạn lần nào; hạn mới = hạn cũ + số ngày gia hạn **trong snapshot**; ghi `renewal_logs`
+- [x] Kiểm tra điều kiện mượn, trả về **mọi** lý do bị chặn với mã: `CARD_MISSING`, `CARD_EXPIRED`, `CARD_LOCKED`, `ACCOUNT_LOCKED`, `OVERDUE`, `UNPAID_FINE`, `NO_REGULATION`, `LIMIT_REACHED`
+- [x] Kiểm tra bản sách: tồn tại (8a), đang Khả dụng (8b), không vượt số cuốn còn được mượn (8c), không chọn trùng, ít nhất 1 cuốn (9b)
+- [x] **Một transaction**: khóa dòng độc giả → kiểm tra điều kiện → khóa các bản sách (`FOR UPDATE`) → lấy quy định hiệu lực → tạo phiếu kèm snapshot → tạo `borrow_details` (hạn trả = ngày lập + số ngày mượn) → chuyển bản sách sang Đang mượn. Lỗi ở đâu cũng không ghi gì (12a)
+- [x] Hai thủ thư cùng cho mượn một cuốn cùng lúc: chỉ một người thành công (có test)
+- [x] Gia hạn: chưa trả, chưa quá hạn (6a), chưa gia hạn lần nào (6b); hạn mới = hạn cũ + số ngày gia hạn **trong snapshot**; ghi `renewal_logs`
+- [x] Test: `tests/loans.test.js` (10 test, gồm TH1, TH2, TH5, TH6); thử tay: `requests/gd6-loans.http`
 
 **Xong khi:** chạy đúng TH1 (mượn 2 cuốn), TH2 (đã 3/3 bị từ chối), TH5 (nợ phạt bị chặn); lỗi giữa chừng thì không có dữ liệu nào bị ghi.
+
+**Trạng thái:** xong. Hàm dùng chung cho GĐ7: `utils/date.js` (`todayVN`, `addDays`), `utils/format.js` (`formatVND`, `ticketCode`, `receiptCode`).
 
 ---
 

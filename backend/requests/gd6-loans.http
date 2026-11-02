@@ -1,0 +1,146 @@
+### =====================================================================
+### Thử tay GĐ6 – Lập phiếu mượn & gia hạn (UC007, UC008)
+###
+### Cách dùng: giống gd2-auth.http (extension REST Client, chạy npm run dev,
+### bấm "Send Request" theo thứ tự từ trên xuống).
+### Muốn chạy lại từ đầu: npm run db:reset
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Đăng nhập Thủ thư
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "Thuvien@2026" }
+
+###
+@token = {{login.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### UC007 bước 3–6 – KIỂM TRA ĐIỀU KIỆN MƯỢN
+### ---------------------------------------------------------------------
+
+### 2. HS2026001 → eligible = true, summary "Đã mượn 0/3, còn được mượn 3"
+GET {{baseUrl}}/loans/eligibility/HS2026001
+Authorization: Bearer {{token}}
+
+### 3. (TH2 / 5c) HS2026002 → problems: "Đã mượn 3/3 cuốn"
+GET {{baseUrl}}/loans/eligibility/HS2026002
+Authorization: Bearer {{token}}
+
+### 4. (5b) HS2026004 → còn sách quá hạn
+GET {{baseUrl}}/loans/eligibility/HS2026004
+Authorization: Bearer {{token}}
+
+### 5. (TH5 / 5b) HS2026005 → còn nợ phạt 3.000đ, có danh sách unpaidFines
+GET {{baseUrl}}/loans/eligibility/HS2026005
+Authorization: Bearer {{token}}
+
+### 6. (5a) HS2026007 → thẻ hết hạn
+GET {{baseUrl}}/loans/eligibility/HS2026007
+Authorization: Bearer {{token}}
+
+### 7. (3a) Mã không tồn tại → 404 "Không tìm thấy độc giả"
+GET {{baseUrl}}/loans/eligibility/HS9999999
+Authorization: Bearer {{token}}
+
+
+### ---------------------------------------------------------------------
+### UC007 bước 7–13 – LẬP PHIẾU
+### ---------------------------------------------------------------------
+
+### 8. (TH1) HS2026001 mượn Toán 10 + Số đỏ → 201
+###     snapshot.borrowDays = 7, hạn trả = hôm nay + 7, ticketCode dạng PM0000xx
+# @name ticket
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026001", "copyCodes": ["BS000005", "BS000014"] }
+
+### 9. Xem / in phiếu vừa lập (bước 13)
+GET {{baseUrl}}/loans/{{ticket.response.body.data.borrowId}}
+Authorization: Bearer {{token}}
+
+### 10. Kiểm tra lại HS2026001 → "Đã mượn 2/3, còn được mượn 1"
+GET {{baseUrl}}/loans/eligibility/HS2026001
+Authorization: Bearer {{token}}
+
+### 11. (TH2) HS2026002 đã 3/3 → 409 "Đã mượn 3/3 cuốn"
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026002", "copyCodes": ["BS000006"] }
+
+### 12. (TH5) HS2026005 còn nợ phạt → 409
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026005", "copyCodes": ["BS000006"] }
+
+### 13. (8a) Mã bản sách không tồn tại → 404
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026003", "copyCodes": ["BS999999"] }
+
+### 14. (8b) Bản sách đang được mượn → 409
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026003", "copyCodes": ["BS000001"] }
+
+### 15. (8c) HS2026003 còn được mượn 2 mà chọn 3 → 409 "Chỉ còn được mượn 2 cuốn"
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026003", "copyCodes": ["BS000006", "BS000008", "BS000009"] }
+
+### 16. (9b) Chưa chọn bản sách → 400 "Chưa chọn bản sách nào"
+POST {{baseUrl}}/loans
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "readerCode": "HS2026003", "copyCodes": [] }
+
+
+### ---------------------------------------------------------------------
+### UC008 – GIA HẠN
+### ---------------------------------------------------------------------
+
+### 17. Sách đang mượn của HS2026001 → canRenew = true, newDueDate = hôm nay + 14
+# @name active
+GET {{baseUrl}}/loans/active?readerCode=HS2026001
+Authorization: Bearer {{token}}
+
+### 18. Gia hạn cuốn đầu tiên → 200, hạn trả mới
+POST {{baseUrl}}/loans/items/{{active.response.body.data[0].borrowDetailId}}/renew
+Authorization: Bearer {{token}}
+
+### 19. (6b) Gia hạn lần 2 → 409 "Chỉ được gia hạn 1 lần"
+POST {{baseUrl}}/loans/items/{{active.response.body.data[0].borrowDetailId}}/renew
+Authorization: Bearer {{token}}
+
+### 20. Tìm theo mã bản sách: BS000002 (HS2026008 đã gia hạn) → canRenew = false
+GET {{baseUrl}}/loans/active?copyCode=BS000002
+Authorization: Bearer {{token}}
+
+### 21. (6a) Sách quá hạn của HS2026004 → canRenew = false, "Sách đã quá hạn..."
+GET {{baseUrl}}/loans/active?readerCode=HS2026004
+Authorization: Bearer {{token}}
+
+### 22. (6a) Cố gia hạn sách quá hạn (borrowDetailId = 5) → 409
+POST {{baseUrl}}/loans/items/5/renew
+Authorization: Bearer {{token}}
+
+### 23. (4a) GV2026002 không có sách đang mượn → 404 "Không tìm thấy sách đang mượn"
+GET {{baseUrl}}/loans/active?readerCode=GV2026002
+Authorization: Bearer {{token}}

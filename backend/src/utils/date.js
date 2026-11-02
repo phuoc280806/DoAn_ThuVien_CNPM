@@ -6,4 +6,11 @@ function todayVN() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());
 }
 
-module.exports = { todayVN };
+// Cộng (hoặc trừ) số ngày: addDays('2026-11-02', 7) → '2026-11-09'
+function addDays(date, days) {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+module.exports = { todayVN, addDays };

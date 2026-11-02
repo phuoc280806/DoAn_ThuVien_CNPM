@@ -40,9 +40,9 @@ Mỗi phiếu mượn lưu **snapshot quy định** tại thời điểm lập p
 | UC001 | Đăng nhập / đăng xuất | `auth` |
 | UC002 | Quản lý tài khoản & phân quyền | `users` |
 | UC003 | Quản lý hồ sơ độc giả & thẻ thư viện | `readers` |
-| UC004 | Quản lý đầu sách | `titles` |
+| UC004 | Quản lý đầu sách | `books` |
 | UC005 | Quản lý trạng thái bản sách | `copies` |
-| UC006 | Tra cứu sách & xem số bản khả dụng | `titles` |
+| UC006 | Tra cứu sách & xem số bản khả dụng | `books` |
 | UC007 | Lập phiếu mượn | `loans` |
 | UC008 | Gia hạn mượn | `loans` |
 | UC009 | Trả sách | `returns` |
@@ -95,7 +95,7 @@ DoAn_ThuVien_CNPM/
 │       ├── middlewares/   # xác thực JWT, phân quyền, xử lý lỗi
 │       ├── utils/         # tính hạn trả, tính phạt, định dạng response
 │       └── modules/       # mỗi module: *.routes.js, *.controller.js, *.service.js, *.repository.js
-│           ├── auth/  users/  readers/  titles/  copies/
+│           ├── auth/  users/  readers/  books/  copies/
 │           ├── loans/  returns/  fines/
 │           └── regulations/  reports/  reminders/
 └── frontend/

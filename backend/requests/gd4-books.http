@@ -1,0 +1,210 @@
+### =====================================================================
+### Thử tay GĐ4 – Sách & bản sách (UC004, UC005, UC006)
+###
+### Cách dùng: giống gd2-auth.http (extension REST Client, chạy npm run dev,
+### bấm "Send Request" theo thứ tự từ trên xuống).
+### Muốn chạy lại từ đầu: npm run db:reset
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Đăng nhập Thủ thư
+# @name librarianLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "Thuvien@2026" }
+
+### 2. Đăng nhập độc giả
+# @name readerLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "HS2026001", "password": "Thuvien@2026" }
+
+###
+@librarian = {{librarianLogin.response.body.data.token}}
+@reader = {{readerLogin.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### UC006 – TRA CỨU SÁCH (độc giả)
+### ---------------------------------------------------------------------
+
+### 3. Danh sách thể loại (để chọn khi lọc / thêm sách)
+GET {{baseUrl}}/categories
+Authorization: Bearer {{reader}}
+
+### 4. Tìm không dấu "de men" → Dế Mèn phiêu lưu ký, totalCopies 3, availableCopies 2
+GET {{baseUrl}}/books?keyword=de men
+Authorization: Bearer {{reader}}
+
+### 5. Tìm theo ISBN → Truyện Kiều
+GET {{baseUrl}}/books?keyword=9786043004779
+Authorization: Bearer {{reader}}
+
+### 6. Lọc theo thể loại Khoa học (categoryId = 3)
+GET {{baseUrl}}/books?categoryId=3
+Authorization: Bearer {{reader}}
+
+### 7. Độc giả tìm "vat li" → chỉ Vật lí 11 (bản chương trình cũ đã ẩn)
+GET {{baseUrl}}/books?keyword=vat li
+Authorization: Bearer {{reader}}
+
+### 8. (8a) Không gia đình → availableCopies = 0
+GET {{baseUrl}}/books/13
+Authorization: Bearer {{reader}}
+
+### 9. Độc giả xem đầu sách đã ẩn → 404
+GET {{baseUrl}}/books/12
+Authorization: Bearer {{reader}}
+
+### 10. Độc giả thêm sách → 403
+POST {{baseUrl}}/books
+Authorization: Bearer {{reader}}
+Content-Type: application/json
+
+{}
+
+
+### ---------------------------------------------------------------------
+### UC004 – QUẢN LÝ ĐẦU SÁCH (Thủ thư)
+### ---------------------------------------------------------------------
+
+### 11. Thủ thư tìm "vat li" → thấy cả bản đã ẩn (isHidden = true)
+GET {{baseUrl}}/books?keyword=vat li
+Authorization: Bearer {{librarian}}
+
+### 12. Thêm đầu sách kèm 3 bản → 201, mã bản sách tự sinh BS000040–BS000042
+# @name newBook
+POST {{baseUrl}}/books
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{
+  "isbn": "978-604-300-742-8",
+  "title": "Hóa học 12",
+  "author": "Bộ GD&ĐT",
+  "publisher": "NXB Giáo dục Việt Nam",
+  "publishYear": 2024,
+  "categoryId": 1,
+  "description": "Sách giáo khoa Hóa học lớp 12",
+  "copies": 3,
+  "location": "Kệ A2"
+}
+
+### 13. (8a) Gửi lại request 12 → 409 "ISBN đã tồn tại trong hệ thống"
+POST {{baseUrl}}/books
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "isbn": "9786043007428", "title": "Trùng", "author": "X", "publisher": "X", "publishYear": 2024, "categoryId": 1 }
+
+### 14. (7a) ISBN sai số kiểm tra → 400 "ISBN không đúng định dạng ISBN-13"
+POST {{baseUrl}}/books
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "isbn": "9786043007429", "title": "Sai ISBN", "author": "X", "publisher": "X", "publishYear": 2024, "categoryId": 1 }
+
+### 15. (7a) Năm xuất bản trong tương lai → 400
+POST {{baseUrl}}/books
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "isbn": "9786043007954", "title": "Sách tương lai", "author": "X", "publisher": "X", "publishYear": 2999, "categoryId": 1 }
+
+### 16. Danh sách bản sách của đầu sách vừa thêm
+GET {{baseUrl}}/books/{{newBook.response.body.data.bookId}}/copies
+Authorization: Bearer {{librarian}}
+
+### 17. Nhập thêm 2 bản cho "Số đỏ" (book 5) → totalCopies = 5
+POST {{baseUrl}}/books/5/copies
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "quantity": 2, "location": "Kệ B2" }
+
+### 18. Sửa đầu sách vừa thêm
+PUT {{baseUrl}}/books/{{newBook.response.body.data.bookId}}
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{
+  "isbn": "9786043007428",
+  "title": "Hóa học 12 (bản mới)",
+  "author": "Bộ GD&ĐT",
+  "publisher": "NXB Giáo dục Việt Nam",
+  "publishYear": 2025,
+  "categoryId": 1
+}
+
+### 19. (8b) Xóa "Dế Mèn" (còn bản đang mượn) → 409
+DELETE {{baseUrl}}/books/4
+Authorization: Bearer {{librarian}}
+
+### 20. Xóa "Đắc nhân tâm" (đã có lịch sử mượn) → 200, deleted = false, sách được ẩn
+DELETE {{baseUrl}}/books/10
+Authorization: Bearer {{librarian}}
+
+### 21. Hiện lại "Đắc nhân tâm"
+PATCH {{baseUrl}}/books/10/hidden
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "hidden": false }
+
+### 22. Xóa đầu sách vừa thêm (chưa từng được mượn) → 200, deleted = true
+DELETE {{baseUrl}}/books/{{newBook.response.body.data.bookId}}
+Authorization: Bearer {{librarian}}
+
+
+### ---------------------------------------------------------------------
+### UC005 – TRẠNG THÁI BẢN SÁCH (Thủ thư)
+### ---------------------------------------------------------------------
+
+### 23. Tra bản sách theo mã quét
+GET {{baseUrl}}/copies/code/BS000005
+Authorization: Bearer {{librarian}}
+
+### 24. Báo hư hỏng mà không có lý do → 400
+PATCH {{baseUrl}}/copies/5/status
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "status": "DAMAGED" }
+
+### 25. Báo hư hỏng có lý do → 200, note = lý do
+PATCH {{baseUrl}}/copies/5/status
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "status": "DAMAGED", "reason": "Bìa sách bị rách" }
+
+### 26. Sửa xong, đưa về Khả dụng → 200, note = null
+PATCH {{baseUrl}}/copies/5/status
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "status": "AVAILABLE" }
+
+### 27. Đổi trạng thái bản đang được mượn (BS000001) → 409
+PATCH {{baseUrl}}/copies/1/status
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "status": "AVAILABLE" }
+
+### 28. Chuyển sang Đang mượn bằng tay → 409 "hãy lập phiếu mượn"
+PATCH {{baseUrl}}/copies/6/status
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "status": "BORROWED" }
+
+### 29. (11c) Trạng thái không hợp lệ → 400
+PATCH {{baseUrl}}/copies/6/status
+Authorization: Bearer {{librarian}}
+Content-Type: application/json
+
+{ "status": "MISSING" }

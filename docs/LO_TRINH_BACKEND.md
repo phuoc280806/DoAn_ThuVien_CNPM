@@ -187,22 +187,32 @@ router.use(authenticate, authorize(ROLES.LIBRARIAN));   // Thủ thư và Admin
 
 | Method | Endpoint | Quyền | Việc |
 |---|---|---|---|
-| GET | `/api/categories` | Đã đăng nhập | Danh sách thể loại |
-| GET | `/api/titles` | Độc giả, Thủ thư | Tra cứu theo tên/tác giả/thể loại/ISBN, kèm số bản khả dụng |
-| GET | `/api/titles/:id` | Độc giả, Thủ thư | Chi tiết đầu sách |
-| POST | `/api/titles` | Thủ thư | Thêm đầu sách + nhập N bản |
-| PUT | `/api/titles/:id` | Thủ thư | Sửa đầu sách |
-| POST | `/api/titles/:id/copies` | Thủ thư | Nhập thêm bản sách |
-| DELETE | `/api/titles/:id` | Thủ thư | Xóa hoặc ẩn (quyết định 7) |
-| GET | `/api/titles/:id/copies` | Thủ thư | Danh sách bản sách và trạng thái |
-| PATCH | `/api/copies/:id/status` | Thủ thư | Đổi trạng thái theo quy tắc (quyết định 6) |
+Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) và `copies`.
 
-- [ ] Kiểm tra định dạng ISBN-13, không trùng ISBN; năm xuất bản không vượt năm hiện tại
-- [ ] Không xóa đầu sách còn bản đang mượn (UC004 8b)
-- [ ] Độc giả không thấy đầu sách đã ẩn
-- [ ] Ghi `copy_status_logs` mỗi lần đổi trạng thái
+| Method | Endpoint | Quyền | Việc |
+|---|---|---|---|
+| GET | `/api/categories` | Đã đăng nhập | Danh sách thể loại |
+| GET | `/api/books?keyword=&categoryId=&page=&pageSize=` | Đã đăng nhập | Tra cứu theo tên/tác giả/ISBN (không dấu), lọc thể loại, kèm `totalCopies`, `availableCopies` |
+| GET | `/api/books/:id` | Đã đăng nhập | Chi tiết đầu sách |
+| POST | `/api/books` | Thủ thư | Thêm đầu sách. Body: `isbn`, `title`, `author`, `publisher`, `publishYear`, `categoryId`, `description`, `copies` (số bản nhập luôn), `location` |
+| PUT | `/api/books/:id` | Thủ thư | Sửa đầu sách (cùng body, trừ `copies`, `location`) |
+| DELETE | `/api/books/:id` | Thủ thư | Xóa hoặc ẩn (quyết định 7); trả `deleted: true/false` |
+| PATCH | `/api/books/:id/hidden` | Thủ thư | Ẩn / hiện lại. Body: `{ "hidden": true \| false }` |
+| GET | `/api/books/:id/copies` | Thủ thư | Danh sách bản sách và trạng thái |
+| POST | `/api/books/:id/copies` | Thủ thư | Nhập thêm bản sách. Body: `{ "quantity": 2, "location": "Kệ B2" }` |
+| GET | `/api/copies/code/:code` | Thủ thư | Tra bản sách theo mã quét (dùng lại ở UC007, UC009) |
+| PATCH | `/api/copies/:id/status` | Thủ thư | Đổi trạng thái theo quy tắc (quyết định 6). Body: `{ "status": "DAMAGED", "reason": "..." }` |
+
+- [x] ISBN-13 kiểm tra cả số kiểm tra, chấp nhận dấu gạch (tự bỏ), không trùng; năm xuất bản không vượt năm hiện tại; thể loại phải có trong danh sách
+- [x] Mã bản sách tự sinh `BS` + `copy_id`
+- [x] Không xóa đầu sách còn bản đang mượn (UC004 8b); đã có lịch sử thì ẩn; chưa từng mượn thì xóa hẳn
+- [x] Độc giả không thấy đầu sách đã ẩn (tìm không ra, xem chi tiết trả 404)
+- [x] Đổi trạng thái: Hư hỏng / Mất bắt buộc có lý do; không đổi bản đang mượn; không chuyển sang Đang mượn bằng tay; ghi `copy_status_logs`
+- [x] Test: `tests/books.test.js` (12 test); thử tay: `requests/gd4-books.http`
 
 **Xong khi:** tra cứu trả đúng số bản khả dụng; đổi trạng thái sai quy tắc bị từ chối.
+
+**Trạng thái:** xong.
 
 ---
 

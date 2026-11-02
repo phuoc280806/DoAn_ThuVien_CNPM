@@ -23,5 +23,6 @@ router.use('/readers', require('./modules/readers/readers.routes'));
 router.use('/categories', require('./modules/books/categories.routes'));
 router.use('/books', require('./modules/books/books.routes'));
 router.use('/copies', require('./modules/copies/copies.routes'));
+router.use('/regulations', require('./modules/regulations/regulations.routes'));
 
 module.exports = router;

@@ -222,17 +222,21 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 
 | Method | Endpoint | Quyền | Việc |
 |---|---|---|---|
-| GET | `/api/regulations` | Admin | Quy định đang hiệu lực + các phiên bản theo vai trò |
+| GET | `/api/regulations` | Admin | Theo từng loại độc giả: quy định đang hiệu lực + các phiên bản, mỗi phiên bản có `status` `CURRENT` / `UPCOMING` / `PAST` |
 | GET | `/api/regulations/current?readerType=` | Thủ thư | Quy định đang hiệu lực (dùng khi lập phiếu) |
-| POST | `/api/regulations` | Admin | Tạo phiên bản mới với ngày hiệu lực |
-| GET | `/api/regulations/logs` | Admin | Nhật ký, lọc theo thời gian/vai trò/người đổi |
+| POST | `/api/regulations` | Admin | Tạo phiên bản mới. Body: `readerType`, `maxBooks`, `borrowDays`, `finePerDay`, `maxFinePerBook`, `renewDays`, `effectiveFrom` |
+| GET | `/api/regulations/logs?from=&to=&readerType=&changedBy=&page=&pageSize=` | Admin | Nhật ký, mới nhất trước; `changedBy` là tên đăng nhập |
 
-- [ ] Không sửa phiên bản cũ, chỉ tạo phiên bản mới
-- [ ] Ngày hiệu lực không ở quá khứ; không trùng ngày với phiên bản chưa hiệu lực khác (6c); phải có thay đổi so với hiện hành (4a)
-- [ ] Phạt tối đa ≥ phạt/ngày
-- [ ] Hàm dùng chung `getEffectiveRegulation(readerType, date)` cho GĐ6
+- [x] Không sửa phiên bản cũ, chỉ tạo phiên bản mới
+- [x] Ngày hiệu lực không ở quá khứ (6b); không trùng ngày với phiên bản khác cùng loại độc giả (6c); phải có thay đổi so với quy định sẽ đang áp dụng vào ngày hiệu lực đó (4a)
+- [x] Các tham số là số nguyên trong giới hạn (6a); phạt tối đa ≥ phạt/ngày
+- [x] Nhật ký chỉ ghi các tham số có thay đổi, ví dụ `{ finePerDay: 1000 } → { finePerDay: 2000 }`
+- [x] Hàm dùng chung cho GĐ6: `regulationsService.getEffective(readerType, date, conn)` — báo lỗi "Chưa cấu hình quy định cho vai trò này" (UC007 10a) nếu chưa có
+- [x] Test: `tests/regulations.test.js` (6 test); thử tay: `requests/gd5-regulations.http`
 
 **Xong khi:** đổi quy định có ngày hiệu lực ở tương lai thì quy định hiện hành chưa đổi; nhật ký ghi đúng giá trị cũ/mới.
+
+**Trạng thái:** xong.
 
 ---
 

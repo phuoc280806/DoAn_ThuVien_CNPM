@@ -1,0 +1,156 @@
+### =====================================================================
+### Thử tay GĐ5 – Quy định (UC013, UC014)
+###
+### Cách dùng: giống gd2-auth.http (extension REST Client, chạy npm run dev,
+### bấm "Send Request" theo thứ tự từ trên xuống).
+### Muốn chạy lại từ đầu: npm run db:reset
+###
+### Các request có ngày hiệu lực dùng {{$datetime ...}} của REST Client
+### để luôn tính từ hôm nay, không phải sửa tay.
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Đăng nhập Admin
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "AD001", "password": "Thuvien@2026" }
+
+### 2. Đăng nhập Thủ thư
+# @name librarianLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "Thuvien@2026" }
+
+###
+@admin = {{adminLogin.response.body.data.token}}
+@librarian = {{librarianLogin.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### XEM QUY ĐỊNH
+### ---------------------------------------------------------------------
+
+### 3. (UC013 bước 2) Admin xem quy định hiện hành + các phiên bản
+###    Học sinh: 7 ngày (CURRENT), 14 ngày (PAST)
+GET {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+
+### 4. Thủ thư xem quy định đang hiệu lực của học sinh (dùng khi lập phiếu)
+GET {{baseUrl}}/regulations/current?readerType=STUDENT
+Authorization: Bearer {{librarian}}
+
+### 5. Thủ thư xem toàn bộ cấu hình → 403 (chỉ Admin)
+GET {{baseUrl}}/regulations
+Authorization: Bearer {{librarian}}
+
+
+### ---------------------------------------------------------------------
+### UC013 – CẤU HÌNH QUY ĐỊNH (Admin)
+### ---------------------------------------------------------------------
+
+### 6. Tăng phạt học sinh lên 2.000đ/ngày, hiệu lực từ NGÀY MAI → 201
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT",
+  "maxBooks": 3,
+  "borrowDays": 7,
+  "finePerDay": 2000,
+  "maxFinePerBook": 30000,
+  "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD' 1 d}}"
+}
+
+### 7. Gửi lại request 4 → vẫn 1.000đ (quy định mới chưa đến ngày hiệu lực)
+GET {{baseUrl}}/regulations/current?readerType=STUDENT
+Authorization: Bearer {{librarian}}
+
+### 8. Xem lại request 3 → học sinh có thêm phiên bản UPCOMING
+GET {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+
+### 9. (6b) Ngày hiệu lực ở quá khứ → 400 "Ngày hiệu lực không được ở quá khứ"
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT", "maxBooks": 3, "borrowDays": 10, "finePerDay": 1000,
+  "maxFinePerBook": 30000, "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD' -1 d}}"
+}
+
+### 10. (6c) Trùng ngày hiệu lực với request 6 → 409
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT", "maxBooks": 3, "borrowDays": 10, "finePerDay": 1000,
+  "maxFinePerBook": 30000, "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD' 1 d}}"
+}
+
+### 11. (4a) Giống hệt quy định sẽ đang áp dụng → 400 "Chưa có thay đổi nào so với quy định hiện hành"
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT", "maxBooks": 3, "borrowDays": 7, "finePerDay": 2000,
+  "maxFinePerBook": 30000, "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD' 2 d}}"
+}
+
+### 12. (6a) Số ngày mượn = 0 → 400
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT", "maxBooks": 3, "borrowDays": 0, "finePerDay": 1000,
+  "maxFinePerBook": 30000, "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD' 3 d}}"
+}
+
+### 13. (6a) Mức phạt tối đa nhỏ hơn phạt/ngày → 400
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT", "maxBooks": 3, "borrowDays": 7, "finePerDay": 1000,
+  "maxFinePerBook": 500, "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD' 3 d}}"
+}
+
+
+### ---------------------------------------------------------------------
+### UC014 – NHẬT KÝ THAY ĐỔI QUY ĐỊNH (Admin)
+### ---------------------------------------------------------------------
+
+### 14. Nhật ký mới nhất trước; dòng đầu là request 6: oldValues {finePerDay: 1000} → newValues {finePerDay: 2000}
+GET {{baseUrl}}/regulations/logs
+Authorization: Bearer {{admin}}
+
+### 15. Lọc theo giáo viên
+GET {{baseUrl}}/regulations/logs?readerType=TEACHER
+Authorization: Bearer {{admin}}
+
+### 16. Lọc theo người thay đổi
+GET {{baseUrl}}/regulations/logs?changedBy=AD001
+Authorization: Bearer {{admin}}
+
+### 17. Chỉ các thay đổi hôm nay
+GET {{baseUrl}}/regulations/logs?from={{$datetime 'YYYY-MM-DD'}}&to={{$datetime 'YYYY-MM-DD'}}
+Authorization: Bearer {{admin}}
+
+### 18. (4a) "Từ ngày" lớn hơn "Đến ngày" → 400 "Khoảng thời gian không hợp lệ"
+GET {{baseUrl}}/regulations/logs?from={{$datetime 'YYYY-MM-DD'}}&to={{$datetime 'YYYY-MM-DD' -5 d}}
+Authorization: Bearer {{admin}}

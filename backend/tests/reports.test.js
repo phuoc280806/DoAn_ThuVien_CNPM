@@ -21,7 +21,7 @@ test('Phân quyền UC016: Thủ thư và Admin xem được báo cáo; độc g
   const reader = await t.login('HS2026001');
   assert.equal((await t.api('GET', `/reports/loans${periodQuery}`)).status, 401);
   assert.equal((await t.api('GET', `/reports/loans${periodQuery}`, { token: reader })).status, 403);
-  assert.equal((await t.api('GET', `/reports/loans/export?format=pdf`, { token: reader })).status, 403);
+  assert.equal((await t.api('GET', `/reports/loans/export${periodQuery}&format=pdf`, { token: reader })).status, 403);
 
   assert.equal((await t.api('GET', `/reports/loans${periodQuery}`, { token: librarian })).status, 200);
   assert.equal((await t.api('GET', `/reports/loans${periodQuery}`, { token: admin })).status, 200);
@@ -36,9 +36,15 @@ test('UC016 6a: kỳ báo cáo không hợp lệ (từ ngày > đến ngày, đ�
   assert.equal(future.status, 400);
   assert.equal(future.body.message, 'Kỳ báo cáo không hợp lệ');
 
+  // Thiếu "Đến ngày" (bắt buộc theo Bảng 2.46) → báo đúng trường bị thiếu
   const missing = await t.api('GET', '/reports/fines?from=2026-10-01', { token: librarian });
   assert.equal(missing.status, 400);
-  assert.equal(missing.body.message, 'Kỳ báo cáo không hợp lệ');
+  assert.deepEqual(missing.body.errors, [{ field: 'to', message: 'Cần nhập đến ngày dạng YYYY-MM-DD' }]);
+
+  // Xuất file cũng bắt buộc nhập kỳ báo cáo, không tự lấy kỳ mặc định
+  const exportMissing = await t.api('GET', '/reports/loans/export?format=xlsx', { token: librarian });
+  assert.equal(exportMissing.status, 400);
+  assert.equal(exportMissing.body.message, 'Cần nhập từ ngày dạng YYYY-MM-DD');
 });
 
 test('UC016 (1): báo cáo thống kê mượn/trả và dòng tổng cộng', async () => {
@@ -123,14 +129,16 @@ test('UC016 bước 9–10: xuất báo cáo ra file Excel (.xlsx) và PDF (.pdf
   assert.match(pdf.headers.get('content-disposition'), /bao-cao-overdue-.*\.pdf/);
   assert.equal(pdf.buffer.subarray(0, 5).toString(), '%PDF-');
 
-  const finesPdf = await t.api('GET', '/reports/fines/export?format=pdf', { token: admin });
+  const finesPdf = await t.api('GET', `/reports/fines/export${periodQuery}&format=pdf`, { token: admin });
   assert.equal(finesPdf.status, 200);
   assert.equal(finesPdf.buffer.subarray(0, 5).toString(), '%PDF-');
 
-  const badType = await t.api('GET', '/reports/unknown/export?format=xlsx', { token: librarian });
+  const badType = await t.api('GET', `/reports/unknown/export${periodQuery}&format=xlsx`, { token: librarian });
   assert.equal(badType.status, 400);
+  assert.equal(badType.body.message, 'Loại báo cáo phải là loans, overdue hoặc fines');
 
-  const badFormat = await t.api('GET', '/reports/loans/export?format=csv', { token: librarian });
+  const badFormat = await t.api('GET', `/reports/loans/export${periodQuery}&format=csv`, { token: librarian });
   assert.equal(badFormat.status, 400);
+  assert.equal(badFormat.body.message, 'Định dạng xuất phải là xlsx hoặc pdf');
 });
 

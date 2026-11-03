@@ -147,7 +147,7 @@ npm run dev               # kiểm tra nhanh: mở http://localhost:5000/api/hea
 # 4. Chạy toàn bộ 88 ca kiểm thử tự động (dùng DB riêng thuvien_thpt_test, không ảnh hưởng dữ liệu chính)
 npm test
 
-# 5. Chạy Frontend (http://localhost:5173)
+# 5. Chạy Frontend (http://localhost:5173) – đang làm, chưa chạy được
 cd ../frontend
 cp .env.example .env
 npm install
@@ -164,13 +164,14 @@ npm run dev
 | `DB_NAME` | `thuvien_thpt` | Tên cơ sở dữ liệu chính |
 | `JWT_SECRET`, `JWT_EXPIRES_IN` | `...`, `1d` | Khóa bí mật và thời hạn của JWT token |
 | `CLIENT_URL` | `http://localhost:5173` | Địa chỉ Frontend được phép gọi CORS |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | *(tùy chọn)* | Cấu hình SMTP (ví dụ Gmail App Password) để gửi email nhắc hạn thật ở UC017; nếu để trống hệ thống dùng chế độ giả lập an toàn |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | *(tùy chọn)* | Cấu hình SMTP (ví dụ Gmail App Password) để gửi email nhắc hạn thật ở UC017. Nếu bỏ trống `SMTP_HOST`, email chỉ được **giả lập** (độc giả không nhận được); API báo rõ điều này và `reminder_logs` có ghi chú |
+| `SCHOOL_NAME` | `THƯ VIỆN TRƯỜNG THPT` | Tên đơn vị in ở đầu file PDF báo cáo (UC016) |
 
 `npm run db:reset` **xóa sạch** database `thuvien_thpt` rồi tạo lại từ `database/schema.sql` và `database/seed.sql`. Dùng lệnh này mỗi khi có người sửa schema, hoặc khi muốn đưa dữ liệu về trạng thái ban đầu. Cũng có thể mở hai file SQL này trong MySQL Workbench và chạy lần lượt.
 
 ### 4. Hướng dẫn sử dụng và kiểm thử nhanh
 
-1. **Qua giao diện Web / API REST:**
+1. **Qua API REST** (giao diện Web sẽ đi theo đúng các bước này khi frontend hoàn thành):
    - **Độc giả:** Đăng nhập bằng mã độc giả (ví dụ `HS2026001` / `Thuvien@2026`) → vào mục **Tra cứu sách** (`GET /api/books`) để tìm sách và xem số bản khả dụng → vào **Lịch sử mượn trả** (`GET /api/me/loans`) để xem các cuốn đang mượn, hạn trả, tiền phạt và biên lai.
    - **Thủ thư:** Đăng nhập bằng `TT01` / `Thuvien@2026`:
      - **Lập phiếu mượn (UC007):** Nhập mã độc giả (`GET /api/loans/eligibility/:readerCode`) để kiểm tra điều kiện → quét các mã bản sách (`BS000005`...) và xác nhận lập phiếu (`POST /api/loans`).
@@ -180,7 +181,7 @@ npm run dev
    - **Admin:** Đăng nhập bằng `AD001` / `Thuvien@2026` → quản lý tài khoản (`/api/users`), cấu hình quy định mới có ngày hiệu lực (`/api/regulations`), xem nhật ký thay đổi (`/api/regulations/logs`) hoặc áp dụng quy định cho các phiếu đang mượn kèm lý do (`/api/regulations/apply-active-loans`).
 2. **Qua Postman hoặc VS Code REST Client:**
    - Import file **[docs/ThuVien_THPT_Nhom07.postman_collection.json](docs/ThuVien_THPT_Nhom07.postman_collection.json)** vào Postman. Khi chạy request **Đăng nhập**, token sẽ tự động lưu vào biến `{{token}}` của Collection.
-   - Hoặc mở trực tiếp các file `backend/requests/gd1-health.http` → `gd9-reminders.http` bằng extension **REST Client** trên VS Code.
+   - Hoặc mở trực tiếp các file `backend/requests/gd2-auth.http` → `gd9-reminders.http` bằng extension **REST Client** trên VS Code.
    - Bảng ca kiểm thử chi tiết cho Chương 6 của tiểu luận: **[docs/BANG_TEST_CASE_CHUONG_6.md](docs/BANG_TEST_CASE_CHUONG_6.md)**.
 
 ### Tài khoản mẫu

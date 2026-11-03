@@ -8,7 +8,9 @@ async function list(req, res) {
 
 async function send(req, res) {
   const data = await service.send(req.body, req.user);
-  return ok(res, data, 'Gửi email nhắc hạn trả thành công');
+  return ok(res, data, data.simulated
+    ? 'Chưa cấu hình SMTP nên email chỉ được giả lập, độc giả không nhận được'
+    : 'Gửi email nhắc hạn trả thành công');
 }
 
 async function listLogs(req, res) {

@@ -56,8 +56,9 @@ function toLogDto(row) {
   };
 }
 
-// UC015 bước 6 – Phiếu đang mượn bị ảnh hưởng: giá trị cũ → mới và cảnh báo chuyển sang quá hạn
-function toAffectedTicketDto(ticket, { oldValues, newValues, wasOverdue, isOverdue, willBecomeOverdue }) {
+// UC015 bước 6 – Phiếu đang mượn bị ảnh hưởng: giá trị cũ → mới (hạn trả theo từng cuốn)
+// và cảnh báo chuyển sang quá hạn
+function toAffectedTicketDto(ticket, { oldValues, newValues, dueDates, wasOverdue, isOverdue, willBecomeOverdue }) {
   return {
     borrowId: ticket.borrow_id,
     ticketCode: ticketCode(ticket.borrow_id),
@@ -70,6 +71,7 @@ function toAffectedTicketDto(ticket, { oldValues, newValues, wasOverdue, isOverd
     },
     oldValues: camelKeys(oldValues),
     newValues: camelKeys(newValues),
+    dueDates,   // [{ borrowDetailId, copyCode, oldDueDate, newDueDate }]
     wasOverdue,
     isOverdue,
     willBecomeOverdue,

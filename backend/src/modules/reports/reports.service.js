@@ -1,41 +1,26 @@
 const AppError = require('../../utils/AppError');
-const { todayVN, addDays } = require('../../utils/date');
+const { todayVN } = require('../../utils/date');
 const { calculateFine } = require('../../utils/fine');
 const { ticketCode, receiptCode } = require('../../utils/format');
 const repo = require('./reports.repository');
 const { buildExcel, buildPdf } = require('./reports.exporter');
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
-function isValidDateString(str) {
-  if (typeof str !== 'string' || !ISO_DATE.test(str)) return false;
-  const d = new Date(`${str}T00:00:00Z`);
-  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === str;
-}
-
 /**
- * UC016 bước 6, 6a – Kiểm tra kỳ báo cáo:
+ * UC016 bước 6, 6a – Kiểm tra kỳ báo cáo (định dạng ngày đã kiểm tra ở routes):
  * "Từ ngày" lớn hơn "Đến ngày" hoặc "Đến ngày" ở tương lai → "Kỳ báo cáo không hợp lệ".
  */
-function resolvePeriod({ from, to } = {}, { allowDefault = false } = {}) {
-  const today = todayVN();
-  const effectiveTo = to || (allowDefault ? today : null);
-  const effectiveFrom = from || (allowDefault && effectiveTo ? addDays(effectiveTo, -60) : null);
-
-  if (!isValidDateString(effectiveFrom) || !isValidDateString(effectiveTo)) {
+function resolvePeriod({ from, to }) {
+  if (from > to || to > todayVN()) {
     throw new AppError(400, 'Kỳ báo cáo không hợp lệ');      // 6a
   }
-  if (effectiveFrom > effectiveTo || effectiveTo > today) {
-    throw new AppError(400, 'Kỳ báo cáo không hợp lệ');      // 6a
-  }
-  return { from: effectiveFrom, to: effectiveTo };
+  return { from, to };
 }
 
 /**
  * UC016 (1) – Báo cáo thống kê mượn/trả theo kỳ.
  */
-async function loansReport(query, options) {
-  const period = resolvePeriod(query, options);
+async function loansReport(query) {
+  const period = resolvePeriod(query);
   const [rows, returnedInPeriod] = await Promise.all([
     repo.listLoanTickets(period),
     repo.countReturnedInPeriod(period),
@@ -87,8 +72,8 @@ async function loansReport(query, options) {
 /**
  * UC016 (2) – Báo cáo sách trả trễ và đang quá hạn theo kỳ.
  */
-async function overdueReport(query, options) {
-  const period = resolvePeriod(query, options);
+async function overdueReport(query) {
+  const period = resolvePeriod(query);
   const today = todayVN();
   const rows = await repo.listOverdueAndLateItems(period);
 
@@ -154,8 +139,8 @@ async function overdueReport(query, options) {
 /**
  * UC016 (3) – Báo cáo tiền phạt đã thu / chưa thu và độc giả còn nợ.
  */
-async function finesReport(query, options) {
-  const period = resolvePeriod(query, options);
+async function finesReport(query) {
+  const period = resolvePeriod(query);
   const rows = await repo.listFinesInPeriod(period);
 
   const items = rows.map((r) => ({
@@ -241,24 +226,13 @@ const REPORT_HANDLERS = {
  * UC016 bước 9–10 – Xuất báo cáo ra file Excel (.xlsx) hoặc PDF (.pdf).
  */
 async function exportReport(type, { from, to, format }) {
-  const handler = REPORT_HANDLERS[type];
-  if (!handler) {
-    throw new AppError(400, 'Loại báo cáo phải là loans, overdue hoặc fines');
-  }
-
-  const normalizedFormat = String(format || '').toLowerCase();
-  if (!['xlsx', 'excel', 'pdf'].includes(normalizedFormat)) {
-    throw new AppError(400, 'Định dạng xuất phải là xlsx hoặc pdf');
-  }
-
-  const { data } = await handler({ from, to }, { allowDefault: true });
-  const isPdf = normalizedFormat === 'pdf';
-  const ext = isPdf ? 'pdf' : 'xlsx';
+  const { data } = await REPORT_HANDLERS[type]({ from, to });
+  const isPdf = format === 'pdf';
   const contentType = isPdf
     ? 'application/pdf'
     : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
   const buffer = isPdf ? await buildPdf(type, data) : await buildExcel(type, data);
-  const filename = `bao-cao-${type}-${data.period.from}-${data.period.to}.${ext}`;
+  const filename = `bao-cao-${type}-${data.period.from}-${data.period.to}.${format}`;
 
   return { buffer, contentType, filename };
 }

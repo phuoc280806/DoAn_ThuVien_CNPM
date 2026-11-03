@@ -306,8 +306,8 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 | GET | `/api/reports/fines?from=&to=` | Thủ thư | Tiền phạt đã thu / chưa thu, độc giả còn nợ |
 | GET | `/api/reports/:type/export?format=xlsx\|pdf` | Thủ thư | Xuất file |
 
-- [x] UC015 chạy trong transaction, lỗi thì hoàn tác toàn bộ; lưu giá trị cũ vào `regulation_logs` và `ticket_snapshot_changes`
-- [x] Báo cáo kiểm tra khoảng thời gian hợp lệ, "Đến ngày" không ở tương lai (6a); không có dữ liệu thì báo rõ (8a)
+- [x] UC015 chạy trong transaction, lỗi thì hoàn tác toàn bộ; lưu giá trị cũ vào `regulation_logs` và `ticket_snapshot_changes` (kèm hạn trả cũ/mới của từng cuốn)
+- [x] Báo cáo bắt buộc nhập "Từ ngày", "Đến ngày" (cả khi xuất file), kiểm tra khoảng thời gian hợp lệ, "Đến ngày" không ở tương lai (6a); không có dữ liệu thì báo rõ (8a)
 - [x] Xuất báo cáo ra Excel (`exceljs`) và PDF (`pdfkit` kèm font tiếng Việt `assets/fonts/Roboto-Regular.ttf`)
 - [x] Test: `tests/apply-regulation.test.js` (6 test), `tests/reports.test.js` (7 test); thử tay: `requests/gd8-reports.http`
 
@@ -329,7 +329,8 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 
 - [x] Cấu hình SMTP trong `.env.example` (ví dụ Gmail App Password); ghi `reminder_logs` cả khi gửi thành công và khi gửi thất bại
 - [x] Xử lý đầy đủ các luồng thay thế: `2a` (danh sách trống: `"Không có phiếu cần nhắc"`), `4a` (thiếu email: `"Độc giả chưa có email, hãy nhắc trực tiếp"`), `5a` (lỗi gửi email: ghi `reminder_logs` với `success = false`, báo lỗi và cho phép gửi lại)
-- [x] Test: `tests/reminders.test.js` (8 test, giả lập việc gửi mail); thử tay: `requests/gd9-reminders.http`
+- [x] Chưa cấu hình `SMTP_HOST` thì chỉ giả lập: API trả `simulated: true` kèm thông báo rõ, `reminder_logs` có ghi chú, không báo "gửi thành công"
+- [x] Test: `tests/reminders.test.js` (9 test, giả lập việc gửi mail); thử tay: `requests/gd9-reminders.http`
 
 **Trạng thái:** xong.
 

@@ -83,6 +83,12 @@ async function sendReminderEmail(payload) {
   return transporter.sendMail(mailOptions);
 }
 
+// Chưa cấu hình SMTP_HOST (và không có sender tùy chỉnh) thì chỉ giả lập bằng jsonTransport:
+// email KHÔNG thực sự được gửi tới độc giả
+function isSimulated() {
+  return typeof customSender !== 'function' && !process.env.SMTP_HOST;
+}
+
 function setMailSender(fn) {
   customSender = fn;
 }
@@ -93,6 +99,7 @@ function resetMailSender() {
 
 module.exports = {
   sendReminderEmail,
+  isSimulated,
   setMailSender,
   resetMailSender,
 };

@@ -5,6 +5,7 @@ const repo = require('./reminders.repository');
 const mailer = require('./reminders.mailer');
 
 const DUE_SOON_DAYS = 3;
+const SIMULATED_NOTE = 'Chưa cấu hình SMTP: email chỉ được giả lập, độc giả không nhận được';
 
 function mapCandidateRow(row, today) {
   const dueDate = String(row.due_date).slice(0, 10);
@@ -125,6 +126,9 @@ async function send(body = {}, actor) {
     ]);
   }
 
+  const simulated = mailer.isSimulated();
+  if (simulated) console.warn(`[UC017] ${SIMULATED_NOTE}. Cấu hình SMTP_* trong backend/.env để gửi thật.`);
+
   const results = [];
   const failedItems = [];
 
@@ -148,7 +152,7 @@ async function send(body = {}, actor) {
         email: item.email,
         sentBy: actor.userId,
         success: true,
-        errorMessage: null,
+        errorMessage: simulated ? SIMULATED_NOTE : null,   // ghi chú để lịch sử không hiểu nhầm là đã gửi thật
       });
 
       results.push({
@@ -209,6 +213,7 @@ async function send(body = {}, actor) {
     totalSelected: items.length,
     sentCount: results.length,
     failedCount: 0,
+    simulated,
     results,
   };
 }

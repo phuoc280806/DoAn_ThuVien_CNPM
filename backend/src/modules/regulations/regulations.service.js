@@ -124,6 +124,13 @@ function summarizeValues(tickets, field) {
   return values.length === 1 ? values[0] : values;
 }
 
+// Giá trị lưu vào ticket_snapshot_changes: tham số snapshot kèm hạn trả của từng cuốn
+// dạng { due_dates: { <borrow_detail_id>: 'YYYY-MM-DD' } } để truy vết (bước 10)
+function withDueDates(values, dueDates, key, include) {
+  if (!include) return values;
+  return { ...values, due_dates: Object.fromEntries(dueDates.map((d) => [d.borrowDetailId, d[key]])) };
+}
+
 /**
  * UC015 bước 5–6 – Kiểm tra lựa chọn, tìm các phiếu đang mượn thuộc phạm vi
  * và tính giá trị hiện tại → giá trị mới kèm cảnh báo chuyển sang quá hạn.
@@ -188,27 +195,21 @@ async function planActiveLoans({ readerType, params, fixedDueDate = null }, conn
     const effBorrowDays = snapUpdates.snap_borrow_days ?? row.snap_borrow_days;
     const effRenewDays = snapUpdates.snap_renew_days ?? row.snap_renew_days;
 
-    const detailUpdates = items.map((d) => {
-      const newDueDate = fixedDueDate
-        ?? (updatesDueDate ? addDays(row.borrow_date, effBorrowDays + d.renew_count * effRenewDays) : d.due_date);
-      return {
-        borrowDetailId: d.borrow_detail_id,
-        oldDueDate: d.due_date,
-        newDueDate,
-      };
-    });
+    // Hạn trả tính riêng cho từng cuốn (mỗi cuốn có thể đã gia hạn số lần khác nhau)
+    const dueDates = items.map((d) => ({
+      borrowDetailId: d.borrow_detail_id,
+      copyCode: d.copy_code,
+      oldDueDate: d.due_date,
+      newDueDate: fixedDueDate
+        ?? (updatesDueDate ? addDays(row.borrow_date, effBorrowDays + d.renew_count * effRenewDays) : d.due_date),
+    }));
 
-    if (updatesDueDate && detailUpdates.length > 0) {
-      oldValues.due_date = detailUpdates[0].oldDueDate;
-      newValues.due_date = detailUpdates[0].newDueDate;
-    }
-
-    const wasOverdue = detailUpdates.some((d) => d.oldDueDate < today);
-    const isOverdue = detailUpdates.some((d) => d.newDueDate < today);
+    const wasOverdue = dueDates.some((d) => d.oldDueDate < today);
+    const isOverdue = dueDates.some((d) => d.newDueDate < today);
     const willBecomeOverdue = !wasOverdue && isOverdue;
 
     const hasChange = Object.keys(newValues).some((k) => oldValues[k] !== newValues[k])
-      || detailUpdates.some((d) => d.oldDueDate !== d.newDueDate);
+      || dueDates.some((d) => d.oldDueDate !== d.newDueDate);
 
     if (hasChange) {
       tickets.push({
@@ -217,7 +218,7 @@ async function planActiveLoans({ readerType, params, fixedDueDate = null }, conn
         oldValues,
         newValues,
         snapUpdates,
-        detailUpdates,
+        dueDates,
         wasOverdue,
         isOverdue,
         willBecomeOverdue,
@@ -226,7 +227,7 @@ async function planActiveLoans({ readerType, params, fixedDueDate = null }, conn
   }
 
   if (tickets.length === 0) {
-    throw new AppError(404, 'Không có phiếu đang mượn trong phạm vi đã chọn');     // 5a
+    throw new AppError(409, 'Các phiếu đang mượn trong phạm vi đã dùng đúng giá trị này, không có phiếu nào cần thay đổi');
   }
 
   const overdueWarningCount = tickets.filter((t) => t.willBecomeOverdue).length;
@@ -234,6 +235,7 @@ async function planActiveLoans({ readerType, params, fixedDueDate = null }, conn
     readerType,
     selectedParams,
     fixedDueDate: fixedDueDate || null,
+    updatesDueDate,
     effectiveByType,
     tickets,
     overdueWarningCount,
@@ -260,7 +262,7 @@ async function applyActiveLoans(input, actor) {
 
     for (const t of plan.tickets) {
       await repo.updateTicketSnapshot(t.row.borrow_id, t.regulationId, t.snapUpdates, conn);
-      for (const du of t.detailUpdates) {
+      for (const du of t.dueDates) {
         if (du.oldDueDate !== du.newDueDate) {
           await repo.updateDetailDueDate(du.borrowDetailId, du.newDueDate, conn);
         }
@@ -274,6 +276,7 @@ async function applyActiveLoans(input, actor) {
       logOldValues[key] = summarizeValues(plan.tickets.map((t) => t.oldValues), key);
       logNewValues[key] = summarizeValues(plan.tickets.map((t) => t.newValues), key);
     }
+    if (plan.fixedDueDate) logNewValues.fixed_due_date = plan.fixedDueDate;
 
     const logId = await repo.insertLog(
       {
@@ -294,8 +297,8 @@ async function applyActiveLoans(input, actor) {
       logId,
       plan.tickets.map((t) => ({
         borrowId: t.row.borrow_id,
-        oldValues: t.oldValues,
-        newValues: t.newValues,
+        oldValues: withDueDates(t.oldValues, t.dueDates, 'oldDueDate', plan.updatesDueDate),
+        newValues: withDueDates(t.newValues, t.dueDates, 'newDueDate', plan.updatesDueDate),
       })),
       conn,
     );

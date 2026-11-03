@@ -86,11 +86,18 @@ test('TH6 + UC015 bước 4–6: đổi quy định xong phiếu cũ giữ snaps
   assert.equal(pm2.isOverdue, true);
   assert.equal(pm2.willBecomeOverdue, true);
   assert.equal(pm2.warning, 'Phiếu sẽ chuyển sang quá hạn');
-  assert.deepEqual(pm2.oldValues, { borrowDays: 7, finePerDay: 1000, dueDate: addDays(today, 2) });
-  assert.deepEqual(pm2.newValues, { borrowDays: 3, finePerDay: 2000, dueDate: addDays(today, -2) });
+  assert.deepEqual(pm2.oldValues, { borrowDays: 7, finePerDay: 1000 });
+  assert.deepEqual(pm2.newValues, { borrowDays: 3, finePerDay: 2000 });
+  assert.deepEqual(pm2.dueDates, [
+    { borrowDetailId: 4, copyCode: 'BS000010', oldDueDate: addDays(today, 2), newDueDate: addDays(today, -2) },
+  ]);
 });
 
 test('UC015 bước 7–12: áp dụng quy định mới, cập nhật snapshot, ghi regulation_logs và ticket_snapshot_changes', async () => {
+  // Gia hạn cuốn thứ 2 của PM000001 để 3 cuốn trong phiếu có hạn trả khác nhau (today + 4 → today + 11)
+  const renew = await t.api('POST', '/loans/items/2/renew', { token: librarian });
+  assert.equal(renew.status, 200);
+
   const res = await t.api('POST', '/regulations/apply-active-loans', {
     token: admin,
     body: {
@@ -108,6 +115,8 @@ test('UC015 bước 7–12: áp dụng quy định mới, cập nhật snapshot,
   assert.equal(afterTicket.body.data.snapshot.borrowDays, 3);
   assert.equal(afterTicket.body.data.snapshot.finePerDay, 2000);
   assert.equal(afterTicket.body.data.items[0].dueDate, today);
+  // Cuốn đã gia hạn: borrow_date + 3 + 1 × 7 = today + 7
+  assert.equal(afterTicket.body.data.items.find((i) => i.borrowDetailId === 2).dueDate, addDays(today, 7));
 
   // Phiếu của giáo viên (PM000006) ngoài phạm vi nên giữ nguyên
   const teacherTicket = await t.api('GET', '/loans/6', { token: librarian });
@@ -133,15 +142,28 @@ test('UC015 bước 7–12: áp dụng quy định mới, cập nhật snapshot,
     [res.body.data.logId],
   );
   assert.equal(count, 5);
+
+  // Truy vết: lưu hạn trả cũ / mới của từng cuốn trong PM000001, không chỉ cuốn đầu tiên
+  const [[change]] = await t.pool.query(
+    'SELECT old_values, new_values FROM ticket_snapshot_changes WHERE log_id = ? AND borrow_id = 1',
+    [res.body.data.logId],
+  );
+  assert.deepEqual(change.old_values.due_dates, {
+    1: addDays(today, 4), 2: addDays(today, 11), 3: addDays(today, 4),
+  });
+  assert.deepEqual(change.new_values.due_dates, {
+    1: today, 2: addDays(today, 7), 3: today,
+  });
 });
 
-test('UC015 5a: không còn phiếu nào cần thay đổi trong phạm vi đã chọn', async () => {
+test('UC015: các phiếu trong phạm vi đã dùng đúng giá trị mới thì báo không có gì thay đổi', async () => {
   const res = await t.api('POST', '/regulations/apply-active-loans/preview', {
     token: admin,
     body: { readerType: 'STUDENT', params: ['borrowDays', 'finePerDay'] },
   });
-  assert.equal(res.status, 404);
-  assert.equal(res.body.message, 'Không có phiếu đang mượn trong phạm vi đã chọn');
+  assert.equal(res.status, 409);
+  assert.equal(res.body.message,
+    'Các phiếu đang mượn trong phạm vi đã dùng đúng giá trị này, không có phiếu nào cần thay đổi');
 });
 
 test('UC015: áp dụng ngày thu hồi cố định cho toàn bộ phiếu đang mượn (ALL)', async () => {

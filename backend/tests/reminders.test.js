@@ -166,6 +166,30 @@ test('UC017 5a: khi lỗi gửi mail vẫn ghi reminder_logs(success=false) và 
   assert.equal(sentEmails.length, 1);
 });
 
+test('UC017: chưa cấu hình SMTP thì báo rõ email chỉ được giả lập, reminder_logs có ghi chú', async () => {
+  mailer.resetMailSender();
+  const savedHost = process.env.SMTP_HOST;
+  delete process.env.SMTP_HOST;
+  try {
+    const res = await t.api('POST', '/reminders/send', {
+      token: librarian,
+      body: { borrowDetailIds: [5] },
+    });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.data.simulated, true);
+    assert.equal(res.body.message, 'Chưa cấu hình SMTP nên email chỉ được giả lập, độc giả không nhận được');
+
+    const [[log]] = await t.pool.query(
+      'SELECT success, error_message FROM reminder_logs WHERE reminder_id = ?',
+      [res.body.data.results[0].reminderId],
+    );
+    assert.equal(Boolean(log.success), true);
+    assert.match(log.error_message, /giả lập/);
+  } finally {
+    if (savedHost !== undefined) process.env.SMTP_HOST = savedHost;
+  }
+});
+
 test('UC017 2a: GET /api/reminders trả thông báo "Không có phiếu cần nhắc" khi danh sách trống', async () => {
   // Tạm dời hạn trả của các mục 4, 5, 6 sang +10 ngày để danh sách nhắc hạn trống
   await t.pool.query(

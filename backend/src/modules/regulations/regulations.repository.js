@@ -125,8 +125,9 @@ async function listActiveTickets(readerType, db = pool, { forUpdate = false } = 
 async function listOpenDetailsByTickets(borrowIds, db = pool, { forUpdate = false } = {}) {
   if (borrowIds.length === 0) return [];
   const [rows] = await db.query(
-    `SELECT d.borrow_detail_id, d.borrow_id, d.copy_id, d.due_date, d.renew_count
+    `SELECT d.borrow_detail_id, d.borrow_id, d.copy_id, c.copy_code, d.due_date, d.renew_count
      FROM borrow_details d
+     JOIN book_copies c ON c.copy_id = d.copy_id
      WHERE d.borrow_id IN (?) AND d.return_date IS NULL
      ORDER BY d.borrow_detail_id
      ${forUpdate ? 'FOR UPDATE OF d' : ''}`,

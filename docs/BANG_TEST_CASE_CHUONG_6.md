@@ -11,10 +11,10 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
    - **Kiểm thử theo kịch bản đóng vai (Scenario-based Testing):** Kiểm chứng 6 tình huống diễn tập thực tế `TH1`–`TH6`.
    - **Kiểm thử tích hợp tự động (Automated Integration Testing):** Sử dụng `node:test` và `node:assert/strict` gọi trực tiếp REST API trên database kiểm thử riêng (`thuvien_thpt_test`), tự động nạp lại `database/schema.sql` và `database/seed.sql` trước mỗi bộ test để đảm bảo tính độc lập và lặp lại.
 2. **Công cụ kiểm thử:**
-   - Bộ test tự động: `cd backend && npm test` (10 file test, **79 ca kiểm thử tự động**).
+   - Bộ test tự động: `cd backend && npm test` (11 file test, **88 ca kiểm thử tự động**).
    - Bộ sưu tập Postman: `docs/ThuVien_THPT_Nhom07.postman_collection.json`.
    - Kịch bản kiểm thử SQL: `database/test_borrow_return.sql`.
-   - Các file REST Client theo từng giai đoạn: `backend/requests/gd1-health.http` → `gd9-reminders.http`.
+   - Các file REST Client theo từng giai đoạn: `backend/requests/gd2-auth.http` → `gd9-reminders.http`.
 
 ---
 
@@ -71,9 +71,9 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 |---|---|---|---|---|---|
 | **TC-22** | UC013 – Luồng chính & `4a`, `6a`, `6b`, `6c` | Tạo phiên bản quy định mới và kiểm tra ràng buộc ngày hiệu lực | `POST /api/regulations` (ngày hiệu lực hôm nay / tương lai / quá khứ / trùng ngày / không đổi giá trị) | Lưu phiên bản mới và ghi `regulation_logs (CONFIG)` chỉ gồm các tham số thay đổi; từ chối ngày quá khứ (`400`), trùng ngày (`409`), không đổi (`400`) | **PASS** |
 | **TC-23** | UC014 – Luồng chính & `4a`, `4b` | Xem và lọc nhật ký thay đổi quy định | `GET /api/regulations/logs?from=&to=&readerType=&changedBy=` | Hiển thị mới nhất trước; lọc đúng theo loại độc giả, người thay đổi và kỳ; báo lỗi khi `from > to` hoặc `to` ở tương lai | **PASS** |
-| **TC-24** | UC015 – Luồng chính & `3a`, `5a`, `5b`, `9a` | Xem trước và áp dụng quy định mới / ngày thu hồi cố định cho phiếu đang mượn | `POST /api/regulations/apply-active-loans/preview` và `/apply-active-loans` | Xem trước hiển thị giá trị cũ → mới và cảnh báo `"Phiếu sẽ chuyển sang quá hạn"`; bắt buộc nhập lý do (`9a`); chạy trong 1 transaction và lưu `ticket_snapshot_changes` | **PASS** |
-| **TC-25** | UC016 – Luồng chính & `6a`, `8a` | Báo cáo (1) Mượn/trả, (2) Quá hạn/trả trễ, (3) Tiền phạt; xuất Excel & PDF | `GET /api/reports/:type` và `GET /api/reports/:type/export?format=xlsx\|pdf` | Kiểm tra kỳ báo cáo (`6a`), báo `"Không có dữ liệu trong kỳ đã chọn"` khi trống (`8a`), xuất file `.xlsx` và `.pdf` tiếng Việt hợp lệ | **PASS** |
-| **TC-26** | UC017 – Luồng chính & `2a`, `4a`, `5a` | Xem danh sách sắp đến hạn (≤ 3 ngày) / quá hạn và gửi email nhắc hạn | `GET /api/reminders` và `POST /api/reminders/send` | Trả danh sách đúng hạn mức ≤ 3 ngày và quá hạn; trống báo `"Không có phiếu cần nhắc"` (`2a`); thiếu email báo `"Độc giả chưa có email, hãy nhắc trực tiếp"` (`4a`); lỗi SMTP vẫn ghi `reminder_logs (success = false)` và cho phép gửi lại (`5a`) | **PASS** |
+| **TC-24** | UC015 – Luồng chính & `3a`, `5a`, `5b`, `9a` | Xem trước và áp dụng quy định mới / ngày thu hồi cố định cho phiếu đang mượn | `POST /api/regulations/apply-active-loans/preview` và `/apply-active-loans` | Xem trước hiển thị giá trị cũ → mới (hạn trả tính riêng từng cuốn) và cảnh báo `"Phiếu sẽ chuyển sang quá hạn"`; bắt buộc nhập lý do (`9a`); chạy trong 1 transaction và lưu `ticket_snapshot_changes` kèm hạn trả cũ/mới của từng cuốn | **PASS** |
+| **TC-25** | UC016 – Luồng chính & `6a`, `8a` | Báo cáo (1) Mượn/trả, (2) Quá hạn/trả trễ, (3) Tiền phạt; xuất Excel & PDF | `GET /api/reports/:type` và `GET /api/reports/:type/export?format=xlsx\|pdf` | Bắt buộc nhập "Từ ngày", "Đến ngày" (cả khi xuất file); kiểm tra kỳ báo cáo (`6a`), báo `"Không có dữ liệu trong kỳ đã chọn"` khi trống (`8a`), xuất file `.xlsx` và `.pdf` tiếng Việt hợp lệ | **PASS** |
+| **TC-26** | UC017 – Luồng chính & `2a`, `4a`, `5a` | Xem danh sách sắp đến hạn (≤ 3 ngày) / quá hạn và gửi email nhắc hạn | `GET /api/reminders` và `POST /api/reminders/send` | Trả danh sách đúng hạn mức ≤ 3 ngày và quá hạn; trống báo `"Không có phiếu cần nhắc"` (`2a`); thiếu email báo `"Độc giả chưa có email, hãy nhắc trực tiếp"` (`4a`); lỗi SMTP vẫn ghi `reminder_logs (success = false)` và cho phép gửi lại (`5a`); chưa cấu hình SMTP thì báo rõ email chỉ được giả lập | **PASS** |
 
 ---
 
@@ -81,8 +81,8 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 
 | STT | File kiểm thử | Phạm vi Use Case | Số lượng test | Nội dung kiểm chứng chính |
 |---|---|---|---|---|
-| 1 | `backend/tests/auth.test.js` | Health, UC001 | 8 | `/api/health`, đăng nhập đúng/sai/thiếu trường/bị khóa, `/api/auth/me`, đăng xuất, phân quyền `authorize` |
-| 2 | `backend/tests/users.test.js` | UC002 | 8 | Danh sách/tìm kiếm tài khoản, tạo Thủ thư, cấp tài khoản Độc giả, khóa/mở khóa, đặt lại mật khẩu, đổi vai trò, bảo vệ Admin duy nhất (`7c`), `audit_logs` |
+| 1 | `backend/tests/auth.test.js` | Health, UC001 | 6 | `/api/health`, đăng nhập đúng/sai/thiếu trường/bị khóa, `/api/auth/me`, đăng xuất, phân quyền `authorize` |
+| 2 | `backend/tests/users.test.js` | UC002 | 9 | Danh sách/tìm kiếm tài khoản, tạo Thủ thư, cấp tài khoản Độc giả, khóa/mở khóa, đặt lại mật khẩu, đổi vai trò, bảo vệ Admin duy nhất (`7c`), `audit_logs` |
 | 3 | `backend/tests/readers.test.js` | UC003 | 8 | Danh sách/tìm kiếm không dấu, thêm/sửa hồ sơ độc giả, đồng bộ họ tên tài khoản, cấp thẻ, gia hạn thẻ, khóa/mở khóa thẻ |
 | 4 | `backend/tests/books.test.js` | UC004, UC005, UC006 | 12 | Kiểm tra ISBN-13, tra cứu không dấu & số bản khả dụng, ẩn sách với độc giả, thêm/sửa/xóa hoặc ẩn đầu sách, nhập thêm bản sách, đổi trạng thái bản sách và `copy_status_logs` |
 | 5 | `backend/tests/regulations.test.js` | UC013, UC014 | 6 | Phân quyền, xem các phiên bản quy định (`CURRENT`/`UPCOMING`/`PAST`), tạo quy định hiệu lực tương lai & hôm nay, kiểm tra `4a`/`6a`/`6b`/`6c`, lọc `regulation_logs` |
@@ -91,6 +91,6 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 | 8 | `backend/tests/history.test.js` | UC012 | 5 | Lịch sử mượn/trả của chính độc giả, lọc trạng thái/thời gian, chi tiết phiếu, thông báo `3a`/`5a`/`5b`, chặn xem dữ liệu người khác (`7a`) và ghi `audit_logs` |
 | 9 | `backend/tests/apply-regulation.test.js` | UC015 (TH6) | 6 | Phân quyền Admin, kiểm tra `3a`/`5a`/`5b`/`9a`, xem trước phiếu bị ảnh hưởng & cảnh báo quá hạn, áp dụng quy định mới & ngày thu hồi cố định trong transaction, ghi `ticket_snapshot_changes` |
 | 10 | `backend/tests/reports.test.js` | UC016 | 7 | Phân quyền, kiểm tra kỳ báo cáo (`6a`) và kỳ trống (`8a`), thống kê mượn/trả, sách quá hạn/trả trễ, tiền phạt & độc giả nợ, xuất file `.xlsx` và `.pdf` tiếng Việt |
-| 11 | `backend/tests/reminders.test.js` | UC017 (COULD) | 8 | Phân quyền, danh sách sắp đến hạn (≤ 3 ngày) & quá hạn, lọc trạng thái, chặn độc giả thiếu email (`4a`), giả lập gửi mail thành công, lỗi SMTP (`5a`) ghi `reminder_logs` & gửi lại, danh sách trống (`2a`) |
+| 11 | `backend/tests/reminders.test.js` | UC017 (COULD) | 9 | Phân quyền, danh sách sắp đến hạn (≤ 3 ngày) & quá hạn, lọc trạng thái, chặn độc giả thiếu email (`4a`), giả lập gửi mail thành công, lỗi SMTP (`5a`) ghi `reminder_logs` & gửi lại, báo rõ khi chưa cấu hình SMTP, danh sách trống (`2a`) |
 | **Tổng** | **11 file test** | **UC001 – UC017 (TH1 – TH6)** | **88 test** | **Tất cả hoàn tất trên database kiểm thử độc lập `thuvien_thpt_test`** |
 

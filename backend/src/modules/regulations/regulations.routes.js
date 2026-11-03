@@ -34,7 +34,7 @@ const applyRules = [
     .isArray({ min: 1 }).withMessage('Cần chọn ít nhất một tham số áp dụng'), // 3a
   body('params.*')
     .isIn(APPLY_PARAMS)
-    .withMessage('Tham số áp dụng phải thuộc: borrowDays, finePerDay, maxFinePerBook, renewDays'),
+    .withMessage('Tham số áp dụng phải thuộc: borrowDays (hoặc dueDate), finePerDay, maxFinePerBook, renewDays'),
   body('fixedDueDate')
     .optional({ values: 'falsy' })
     .isDate({ format: 'YYYY-MM-DD', strictMode: true })

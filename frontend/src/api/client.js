@@ -55,6 +55,38 @@ client.interceptors.response.use(
   },
 );
 
+/**
+ * Tải file từ API cần đăng nhập (vd. xuất báo cáo Excel/PDF) rồi lưu về máy.
+ *
+ *   await downloadFile('/reports/loans/export', { from, to, format: 'xlsx' }, 'bao-cao-muon-tra.xlsx');
+ *
+ * Lỗi (vd. kỳ báo cáo không hợp lệ) ném ra như mọi lời gọi khác, dùng errorMessage(err) để hiện.
+ */
+export async function downloadFile(url, params, filename) {
+  let blob;
+  try {
+    blob = await client.get(url, { params, responseType: 'blob' });
+  } catch (err) {
+    // Lỗi trả về dạng Blob: đọc lại thành JSON để lấy câu thông báo của backend
+    const data = err.response?.data;
+    if (data instanceof Blob) {
+      try {
+        err.response.data = JSON.parse(await data.text());
+      } catch {
+        // không phải JSON, giữ nguyên
+      }
+    }
+    throw err;
+  }
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+}
+
 /** Câu thông báo lỗi để hiện cho người dùng. */
 export function errorMessage(err) {
   if (err?.response?.data?.message) return err.response.data.message;

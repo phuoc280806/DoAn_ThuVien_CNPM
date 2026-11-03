@@ -9,11 +9,14 @@ import Field from './Field';
 import StatusBadge from './StatusBadge';
 
 /**
- * Chi tiết một phiếu mượn kèm snapshot quy định lưu lúc lập phiếu (GET /loans/:id, Thủ thư / Admin).
+ * Chi tiết một phiếu mượn kèm snapshot quy định lưu lúc lập phiếu.
  *
  *   <TicketDetailModal borrowId={selectedId} onClose={() => setSelectedId(null)} />
+ *
+ * Mặc định gọi GET /loans/:id (Thủ thư / Admin). Trang của độc giả truyền load={meApi.getMyTicket}
+ * để gọi GET /me/loans/:id (chỉ xem được phiếu của chính mình).
  */
-export default function TicketDetailModal({ borrowId, onClose }) {
+export default function TicketDetailModal({ borrowId, onClose, load = loansApi.getLoan }) {
   const [ticket, setTicket] = useState(null);
   const [error, setError] = useState('');
 
@@ -22,14 +25,13 @@ export default function TicketDetailModal({ borrowId, onClose }) {
     let cancelled = false;
     setTicket(null);
     setError('');
-    loansApi
-      .getLoan(borrowId)
+    load(borrowId)
       .then((body) => !cancelled && setTicket(body.data))
       .catch((err) => !cancelled && setError(errorMessage(err)));
     return () => {
       cancelled = true;
     };
-  }, [borrowId]);
+  }, [borrowId, load]);
 
   return (
     <Modal show={!!borrowId} onHide={onClose} size="lg" centered scrollable>

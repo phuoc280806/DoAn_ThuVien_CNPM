@@ -43,6 +43,7 @@ async function history(viewer, { from, to, status }) {
         lateDays: r.late_days,
         fineAmount: r.fine_amount,
         fineStatus: r.fine_status,       // UNPAID | PAID | null
+        fineId: r.fine_id ?? null,       // dùng để xem biên lai: GET /fines/:fineId/receipt
         receiptCode: r.fine_status === 'PAID' ? receiptCode(r.fine_id) : null,
       })),
     },
@@ -76,6 +77,7 @@ async function ticket(viewer, borrowId) {
     return {
       ...item,
       fineStatus: fine?.status ?? null,
+      fineId: fine?.fine_id ?? null,
       receiptCode: fine?.status === 'PAID' ? receiptCode(fine.fine_id) : null,
     };
   });

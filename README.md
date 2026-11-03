@@ -124,6 +124,8 @@ Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận 
 | FE5 | Quản lý độc giả & thẻ, đầu sách, bản sách (UC003–UC005) | |
 | FE6 | Báo cáo, nhắc hạn, số liệu trang Tổng quan (UC016, UC017) | |
 
+Hướng dẫn chi tiết từng trang của FE4, FE5, FE6 (API cần gọi, dữ liệu trả về, màn hình tham khảo, ca kiểm thử): **[docs/LO_TRINH_FRONTEND.md](docs/LO_TRINH_FRONTEND.md)**.
+
 Mọi trang đã được khai báo sẵn trong `frontend/src/routes/pages.js` (đường dẫn, vai trò, icon, menu). Làm một trang:
 
 1. Tạo component trong `src/pages/<reader|librarian|admin>/`, ví dụ `src/pages/reader/SearchPage.jsx`. Dùng `PageHeader` cho tiêu đề, component của `react-bootstrap` cho bảng/form.
@@ -174,7 +176,7 @@ npm install
 npm run dev
 ```
 
-Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân) FE2 (lập phiếu mượn, trả sách, thu phạt, gia hạn) và FE3 (tài khoản, quy định, nhật ký, quản lý mượn trả của Admin) đã xong; các trang chưa làm hiện "Trang đang được xây dựng" kèm giai đoạn phụ trách.
+Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân), FE2 (lập phiếu mượn, trả sách, thu phạt, gia hạn) và FE3 (tài khoản, quy định, nhật ký, quản lý mượn trả của Admin) đã xong; các trang chưa làm hiện "Trang đang được xây dựng" kèm giai đoạn phụ trách.
 
 #### Cấu hình biến môi trường (`backend/.env`)
 
@@ -190,6 +192,46 @@ Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai 
 | `SCHOOL_NAME` | `THƯ VIỆN TRƯỜNG THPT` | Tên đơn vị in ở đầu file PDF báo cáo (UC016) |
 
 `npm run db:reset` **xóa sạch** database `thuvien_thpt` rồi tạo lại từ `database/schema.sql` và `database/seed.sql`. Dùng lệnh này mỗi khi có người sửa schema, hoặc khi muốn đưa dữ liệu về trạng thái ban đầu. Cũng có thể mở hai file SQL này trong MySQL Workbench và chạy lần lượt.
+
+#### Chạy hệ thống mỗi lần làm việc
+
+Phần cài đặt ở trên chỉ làm một lần. Các lần sau, mỗi khi muốn chạy web:
+
+1. **Bật MySQL.** Trên Windows, MySQL thường tự chạy cùng máy. Nếu chưa chạy: mở `services.msc`, tìm dịch vụ `MySQL80` (tên có thể khác theo bản cài) → **Start**; hoặc mở Terminal quyền Administrator gõ `net start MySQL80`.
+2. **Lấy code mới nhất** (nếu làm nhóm):
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+   Nếu lần pull có thay đổi `package.json` thì chạy lại `npm install` trong thư mục tương ứng; có thay đổi `database/schema.sql` hoặc `seed.sql` thì chạy lại `npm run db:reset`.
+3. **Terminal 1 – chạy backend:**
+   ```bash
+   cd backend
+   npm run dev
+   ```
+   Thấy dòng báo server chạy ở cổng 5000 là được. Kiểm tra: mở http://localhost:5000/api/health, phải thấy `"database":"ok"`. `npm run dev` dùng nodemon nên sửa code backend là server tự khởi động lại.
+4. **Terminal 2 – chạy frontend** (giữ nguyên terminal 1):
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+   Mở http://localhost:5173, đăng nhập bằng tài khoản mẫu ở mục [Tài khoản mẫu](#tài-khoản-mẫu) (mật khẩu chung `Thuvien@2026`). Sửa code frontend thì trình duyệt tự cập nhật, không cần tải lại trang.
+5. **Tắt:** bấm `Ctrl + C` trong từng terminal.
+
+Dữ liệu demo tính ngày lùi từ ngày chạy `db:reset` (ví dụ `HS2026004` luôn quá hạn đúng 5 ngày). Sau khi thử nghiệm làm thay đổi dữ liệu, hoặc trước buổi demo/chấm, chạy `npm run db:reset` trong thư mục `backend` để đưa về trạng thái ban đầu.
+
+#### Xử lý lỗi thường gặp
+
+| Hiện tượng | Nguyên nhân | Cách xử lý |
+|---|---|---|
+| `/api/health` báo `"database":"error"`, hoặc `db:reset` báo `ECONNREFUSED` / `Access denied` | MySQL chưa chạy, hoặc sai mật khẩu | Bật MySQL (bước 1); kiểm tra `DB_USER`, `DB_PASSWORD` trong `backend/.env` |
+| Backend báo `EADDRINUSE :::5000` | Đã có một backend khác đang chạy (thường là terminal cũ chưa tắt) | Tắt terminal cũ, hoặc chạy `npx kill-port 5000` rồi chạy lại |
+| Trang web báo "Không kết nối được máy chủ. Kiểm tra backend đã chạy chưa." | Backend chưa chạy, hoặc `frontend/.env` trỏ sai địa chỉ | Chạy backend (bước 3); kiểm tra `VITE_API_URL=http://localhost:5000/api`, sửa `.env` của frontend thì phải tắt và chạy lại `npm run dev` |
+| Console trình duyệt báo lỗi **CORS** | Frontend không chạy ở `http://localhost:5173` | Đặt `CLIENT_URL` trong `backend/.env` đúng địa chỉ frontend rồi khởi động lại backend |
+| Frontend báo lỗi phiên bản Node khi `npm run dev` | Node.js cũ hơn 20.19 | Cài Node.js bản LTS mới (22.x) rồi chạy lại `npm install` |
+| Đăng nhập tài khoản mẫu báo sai mật khẩu / bị khóa | Có người đã đổi mật khẩu hoặc khóa tài khoản lúc thử | Chạy `npm run db:reset` trong `backend` |
+| `npm test` báo `Can't create database 'thuvien_thpt_test'; database exists` | Chạy nhiều file test cùng lúc | Luôn chạy bằng `npm test` (đã chạy tuần tự), không gọi `node --test` cho nhiều file một lúc |
+| Sau khi `git pull`, frontend báo không tìm thấy thư viện (`Failed to resolve import ...`) | Có người thêm thư viện mới | Chạy `npm install` trong `frontend` |
 
 ### 4. Hướng dẫn sử dụng và kiểm thử nhanh
 
@@ -352,6 +394,7 @@ Không chắc nên giữ phần nào thì hỏi người viết đoạn code kia
 ## Tiến độ
 
 Lộ trình chi tiết của backend và các quyết định bổ sung cho đặc tả: [docs/LO_TRINH_BACKEND.md](docs/LO_TRINH_BACKEND.md).
+Lộ trình frontend và hướng dẫn làm FE4–FE6: [docs/LO_TRINH_FRONTEND.md](docs/LO_TRINH_FRONTEND.md).
 Bảng kiểm thử chi tiết (Chương 6): [docs/BANG_TEST_CASE_CHUONG_6.md](docs/BANG_TEST_CASE_CHUONG_6.md).
 Ma trận truy vết yêu cầu G7-FR01 → G7-FR13 ↔ Use Case ↔ test case: [docs/RTM.md](docs/RTM.md).
 Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs/ThuVien_THPT_Nhom07.postman_collection.json).

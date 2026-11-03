@@ -23,7 +23,7 @@ const ACTIONS = {
   CHANGE_OWN_PASSWORD: 'Tự đổi mật khẩu',
   UNAUTHORIZED_ACCESS: 'Truy cập trái phép',
 };
-const TARGETS = { USER: 'tài khoản', FINE: 'biên lai', TICKET: 'phiếu mượn' };
+const TARGETS = { USER: 'tài khoản', FINE: 'biên lai', BORROW_TICKET: 'phiếu mượn' };
 const STATUS_LABELS = { ACTIVE: 'Hoạt động', LOCKED: 'Bị khóa' };
 
 function Kind({ value }) {

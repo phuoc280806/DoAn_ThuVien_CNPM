@@ -331,6 +331,7 @@ Không chắc nên giữ phần nào thì hỏi người viết đoạn code kia
 
 Lộ trình chi tiết của backend và các quyết định bổ sung cho đặc tả: [docs/LO_TRINH_BACKEND.md](docs/LO_TRINH_BACKEND.md).
 Bảng kiểm thử chi tiết (Chương 6): [docs/BANG_TEST_CASE_CHUONG_6.md](docs/BANG_TEST_CASE_CHUONG_6.md).
+Ma trận truy vết yêu cầu G7-FR01 → G7-FR13 ↔ Use Case ↔ test case: [docs/RTM.md](docs/RTM.md).
 Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs/ThuVien_THPT_Nhom07.postman_collection.json).
 
 - [x] Khảo sát bài toán, đặc tả use case (chương 1–2)

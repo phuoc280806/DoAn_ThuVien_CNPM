@@ -26,6 +26,25 @@ Hai file có cùng cấu trúc (17 bảng, cùng khóa chính/khóa ngoại), ch
 | 16 | NhatKyHeThong | `audit_logs` | Bổ sung so với docx (UC002, UC012) |
 | 17 | NhatKyNhacHan | `reminder_logs` | Bổ sung so với docx (UC017) |
 
+## Đối chiếu với 12 thực thể tối thiểu trong yêu cầu đề tài
+
+Mục 5 của [yêu cầu đề tài](2611COMP104406_Yeu-cau%20(1)_removed.pdf) liệt kê 12 thực thể bắt buộc và cho phép đặt tên bảng khác, miễn chứng minh được dữ liệu cho các rule. Đối chiếu:
+
+| Thực thể theo đề | Bảng (database) | Thực thể (ERD) | Cách đáp ứng |
+|---|---|---|---|
+| User / Role | `users`, `roles` | TaiKhoan, VaiTro | 3 vai trò `READER`, `LIBRARIAN`, `ADMIN`; học sinh / giáo viên phân biệt bằng `readers.reader_type` |
+| Reader Profile | `readers`, `library_cards` | DocGia, TheThuVien | Hồ sơ độc giả; trạng thái được phép mượn suy ra từ thẻ (`status`, `expiry_date`) và tài khoản (`users.status`) |
+| Book | `books` | DauSach | Đầu sách: ISBN, tên, tác giả, NXB, năm, thể loại, mô tả |
+| Book Copy | `book_copies`, `copy_status_logs` | BanSach, LichSuTrangThaiBanSach | Từng bản sao có mã `BS…` và trạng thái `AVAILABLE` / `BORROWED` / `DAMAGED` / `LOST`; số bản có sẵn = đếm bản `AVAILABLE` |
+| Category | `categories` | TheLoai | |
+| Borrow Transaction | `borrow_tickets` | PhieuMuon | Phiếu mượn, kèm snapshot quy định `snap_*` lúc lập phiếu |
+| Borrow Detail | `borrow_details`, `renewal_logs` | ChiTietPhieuMuon, LichSuGiaHan | Từng cuốn trong phiếu, hạn trả và số lần gia hạn riêng từng cuốn |
+| Return | `borrow_details` (các cột trả sách) | ChiTietPhieuMuon | **Gộp vào chi tiết phiếu**: `return_date`, `return_condition`, `return_note`, `late_days`, `fine_amount`, `received_by`. Mỗi cuốn chỉ trả một lần nên không cần bảng riêng; ràng buộc `chk_details_return` bắt buộc ghi đủ thông tin trả |
+| Fine / Payment | `fines` | KhoanPhat | **Gộp khoản phạt và lần thu**: `amount` là số phải thu; `status` = `UNPAID` / `PAID`, `paid_at`, `collected_by` ghi lần thu. Mỗi khoản thu một lần, đủ số tiền (không có thanh toán thật); mã biên lai `BL` + `fine_id` |
+| Library Policy | `regulations` | QuyDinh | Bộ tham số QĐ01–QĐ06 (số sách tối đa, số ngày mượn, phạt/ngày, mức phạt tối đa, số ngày gia hạn), tách riêng cho học sinh và giáo viên |
+| Policy Version | `regulations` (mỗi dòng là một phiên bản), `regulation_logs`, `ticket_snapshot_changes` | QuyDinh, NhatKyQuyDinh, ThayDoiSnapshotPhieu | **Mỗi lần đổi quy định tạo dòng mới, không sửa dòng cũ**; `effective_from` là ngày áp dụng. Phiên bản áp dụng tại ngày D = dòng có `effective_from <= D` lớn nhất. Phiếu ghi `regulation_id` của phiên bản đã dùng. `regulation_logs` lưu giá trị cũ → mới, người đổi, thời điểm |
+| Audit Log | `audit_logs`, `regulation_logs`, `copy_status_logs` | NhatKyHeThong, NhatKyQuyDinh, LichSuTrangThaiBanSach | Thao tác quản trị tài khoản và truy cập trái phép ghi ở `audit_logs`; đổi quy định ở `regulation_logs`; đổi trạng thái bản sách ở `copy_status_logs`. Mượn / trả / thu phạt lưu người thực hiện ngay trên dòng dữ liệu (`librarian_id`, `received_by`, `collected_by`) |
+
 ## Khác biệt so với `thực thể.docx`
 
 1. **Thêm 6 thực thể**: VaiTro, TheLoai, LichSuTrangThaiBanSach, ThayDoiSnapshotPhieu, NhatKyHeThong, NhatKyNhacHan.

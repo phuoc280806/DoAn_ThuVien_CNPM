@@ -2,6 +2,9 @@ import client from './client';
 
 const enc = encodeURIComponent;
 
+// Danh sách phiếu mượn (Admin). params: { keyword, status: BORROWING | COMPLETED | OVERDUE, from, to, page, pageSize }
+export const listLoans = (params) => client.get('/loans', { params });
+
 // UC007 – Lập phiếu mượn
 export const checkEligibility = (readerCode) => client.get(`/loans/eligibility/${enc(readerCode)}`);
 export const createLoan = (readerCode, copyCodes) => client.post('/loans', { readerCode, copyCodes });

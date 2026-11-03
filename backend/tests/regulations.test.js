@@ -51,7 +51,7 @@ test('UC013: tạo quy định có hiệu lực từ ngày mai; hôm nay vẫn d
     body: { ...studentNow, finePerDay: 2000, effectiveFrom: tomorrow },
   });
   assert.equal(res.status, 201);
-  assert.match(res.body.message, new RegExp(`từ ngày ${tomorrow}`));
+  assert.match(res.body.message, new RegExp(`từ ngày ${tomorrow.split('-').reverse().join('/')}`));
 
   const current = await t.api('GET', '/regulations/current?readerType=STUDENT', { token: librarian });
   assert.equal(current.body.data.finePerDay, 1000);
@@ -78,6 +78,8 @@ test('UC013 luồng thay thế: 6b quá khứ, 6c trùng ngày, 4a không thay �
 
   const sameDate = await post({ ...studentNow, borrowDays: 10, effectiveFrom: tomorrow });
   assert.equal(sameDate.status, 409);
+  assert.equal(sameDate.body.message,
+    `Đã có quy định cho học sinh hiệu lực ngày ${tomorrow.split('-').reverse().join('/')}, hãy chọn ngày khác`);
 
   // Ngày kia: quy định đang áp dụng lúc đó là bản 2.000đ vừa tạo → gửi y hệt là không thay đổi
   const noChange = await post({ ...studentNow, finePerDay: 2000, effectiveFrom: addDays(today, 2) });

@@ -30,5 +30,6 @@ router.use('/fines', require('./modules/fines/fines.routes'));
 router.use('/me', require('./modules/readers/me.routes'));
 router.use('/reports', require('./modules/reports/reports.routes'));
 router.use('/reminders', require('./modules/reminders/reminders.routes'));
+router.use('/audit-logs', require('./modules/audit/audit.routes'));
 
 module.exports = router;

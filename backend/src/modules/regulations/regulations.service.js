@@ -1,6 +1,7 @@
 const { pool, withTransaction } = require('../../config/db');
 const AppError = require('../../utils/AppError');
 const { todayVN, addDays } = require('../../utils/date');
+const { formatDateVN } = require('../../utils/format');
 const repo = require('./regulations.repository');
 const { PARAMS, SNAPSHOT_PARAMS, toRegulationDto, toLogDto, toAffectedTicketDto } = require('./regulations.mapper');
 
@@ -70,7 +71,7 @@ async function create(data, actor) {
     // 6c: mỗi loại độc giả chỉ có một phiên bản cho mỗi ngày hiệu lực
     if (await repo.existsOnDate(data.readerType, data.effectiveFrom, conn)) {
       throw new AppError(409,
-        `Đã có quy định cho ${TYPE_LABEL[data.readerType]} hiệu lực ngày ${data.effectiveFrom}, hãy chọn ngày khác`);
+        `Đã có quy định cho ${TYPE_LABEL[data.readerType]} hiệu lực ngày ${formatDateVN(data.effectiveFrom)}, hãy chọn ngày khác`);
     }
 
     // 4a: so với quy định sẽ đang áp dụng vào ngày hiệu lực mới

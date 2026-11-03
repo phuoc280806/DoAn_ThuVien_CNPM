@@ -4,7 +4,7 @@ const { todayVN, addDays } = require('../../utils/date');
 const { formatVND, ticketCode } = require('../../utils/format');
 const regulationsService = require('../regulations/regulations.service');
 const repo = require('./loans.repository');
-const { toReaderSummary, toActiveItemDto, toUnpaidFineDto, toTicketDto } = require('./loans.mapper');
+const { toReaderSummary, toActiveItemDto, toUnpaidFineDto, toTicketDto, toTicketSummaryDto } = require('./loans.mapper');
 
 const COPY_STATUS_LABEL = { BORROWED: 'đang được mượn', DAMAGED: 'bị hư hỏng', LOST: 'đã mất' };
 
@@ -192,4 +192,19 @@ async function renew(borrowDetailId, actor) {
   });
 }
 
-module.exports = { eligibility, createLoan, getTicket, listActive, renew };
+/**
+ * Danh sách phiếu mượn để Admin theo dõi (menu "Quản lý mượn trả"):
+ * lọc theo mã/tên độc giả hoặc mã phiếu, trạng thái, khoảng ngày lập phiếu.
+ * Mỗi phiếu kèm snapshot quy định để so sánh phiếu lập trước / sau khi đổi quy định.
+ */
+async function listTickets({ keyword, status, from, to, page = 1, pageSize = 20 }) {
+  if (from && to && from > to) throw new AppError(400, 'Khoảng thời gian không hợp lệ');
+  const match = keyword && /^PM0*(\d+)$/i.exec(keyword);
+  const { rows, total } = await repo.searchTickets(
+    { keyword, borrowId: match ? Number(match[1]) : null, status, from, to },
+    { limit: pageSize, offset: (page - 1) * pageSize },
+  );
+  return { items: rows.map(toTicketSummaryDto), page, pageSize, total };
+}
+
+module.exports = { eligibility, createLoan, getTicket, listActive, renew, listTickets };

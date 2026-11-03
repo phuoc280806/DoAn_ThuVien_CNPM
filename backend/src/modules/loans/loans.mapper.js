@@ -81,4 +81,28 @@ function toTicketDto(ticket, items) {
   };
 }
 
-module.exports = { toReaderSummary, toActiveItemDto, toUnpaidFineDto, toTicketDto };
+// Một dòng trong danh sách phiếu mượn (Admin – Quản lý mượn trả)
+function toTicketSummaryDto(row) {
+  return {
+    borrowId: row.borrow_id,
+    ticketCode: ticketCode(row.borrow_id),
+    status: row.status,                   // BORROWING | COMPLETED
+    borrowDate: row.borrow_date,
+    completedAt: row.completed_at,
+    reader: { readerCode: row.reader_code, fullName: row.reader_name, readerType: row.reader_type },
+    librarian: { username: row.librarian_username, fullName: row.librarian_name },
+    totalBooks: row.total_books,
+    returnedBooks: Number(row.returned_books),
+    overdueBooks: Number(row.overdue_books),
+    nextDueDate: row.next_due_date,       // hạn trả gần nhất của các cuốn chưa trả
+    snapshot: {
+      regulationId: row.regulation_id,
+      borrowDays: row.snap_borrow_days,
+      finePerDay: row.snap_fine_per_day,
+      maxFinePerBook: row.snap_max_fine_per_book,
+      renewDays: row.snap_renew_days,
+    },
+  };
+}
+
+module.exports = { toReaderSummary, toActiveItemDto, toUnpaidFineDto, toTicketDto, toTicketSummaryDto };

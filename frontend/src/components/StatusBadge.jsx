@@ -35,6 +35,16 @@ export const STATUS = {
     OVERDUE: ['Quá hạn', 'danger'],
     ON_TIME: ['Trong hạn', 'success'],
   },
+  regulation: {
+    CURRENT: ['Đang hiệu lực', 'success'],
+    UPCOMING: ['Sắp hiệu lực', 'info'],
+    PAST: ['Hết hiệu lực', 'secondary'],
+  },
+  role: {
+    READER: ['Độc giả', 'secondary'],
+    LIBRARIAN: ['Thủ thư', 'info'],
+    ADMIN: ['Admin', 'primary'],
+  },
 };
 
 export const statusLabel = (type, value) => STATUS[type]?.[value]?.[0] ?? value;

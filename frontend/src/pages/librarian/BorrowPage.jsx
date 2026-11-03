@@ -11,6 +11,7 @@ import StatusBadge from '../../components/StatusBadge';
 import Field from '../../components/Field';
 import { addDays, formatDate, formatMoney, initialsOf, todayVN } from '../../utils/format';
 import { READER_TYPE_LABELS } from '../../utils/roles';
+import { snapshotText } from '../../utils/regulation';
 
 // Dữ liệu trong database/seed.sql
 const READER_PICKS = [
@@ -31,9 +32,6 @@ const COPY_PICKS = [
 
 // Giống câu báo lỗi của backend khi lập phiếu (UC007 8b)
 const UNAVAILABLE = { BORROWED: 'đang được mượn', DAMAGED: 'bị hư hỏng', LOST: 'đã mất' };
-
-const snapshotText = (r) =>
-  `${r.borrowDays} ngày · phạt ${formatMoney(r.finePerDay)}/ngày · tối đa ${formatMoney(r.maxFinePerBook)}/cuốn · gia hạn +${r.renewDays} ngày`;
 
 function ReaderPanel({ elig }) {
   const { reader } = elig;

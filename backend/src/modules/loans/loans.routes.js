@@ -48,6 +48,23 @@ router.post(
   controller.create,
 );
 
+// Danh sách phiếu mượn (Admin – Quản lý mượn trả)
+const dateQuery = (field, label) =>
+  query(field).optional({ values: 'falsy' }).isDate({ format: 'YYYY-MM-DD', strictMode: true }).withMessage(`${label} phải có dạng YYYY-MM-DD`);
+
+router.get(
+  '/',
+  query('keyword').optional({ values: 'falsy' }).trim(),
+  query('status').optional({ values: 'falsy' }).isIn(['BORROWING', 'COMPLETED', 'OVERDUE'])
+    .withMessage('Trạng thái phải là BORROWING, COMPLETED hoặc OVERDUE'),
+  dateQuery('from', 'Từ ngày'),
+  dateQuery('to', 'Đến ngày'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Trang không hợp lệ').toInt(),
+  query('pageSize').optional().isInt({ min: 1, max: 100 }).withMessage('Số dòng mỗi trang từ 1 đến 100').toInt(),
+  validate,
+  controller.list,
+);
+
 router.get('/:id', param('id').isInt({ min: 1 }).withMessage('Mã phiếu không hợp lệ').toInt(), validate, controller.getById);
 
 // UC008 bước 8–10: gia hạn một cuốn trong phiếu

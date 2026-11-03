@@ -1,6 +1,7 @@
 const { matchedData } = require('express-validator');
 const service = require('./regulations.service');
 const { ok, created } = require('../../utils/response');
+const { formatDateVN } = require('../../utils/format');
 
 async function overview(req, res) {
   ok(res, await service.overview());
@@ -13,7 +14,7 @@ async function current(req, res) {
 async function create(req, res) {
   const regulation = await service.create(matchedData(req, { locations: ['body'] }), { userId: req.user.userId });
   created(res, regulation,
-    `Đã lưu quy định mới. Quy định chỉ áp dụng cho phiếu lập từ ngày ${regulation.effectiveFrom} trở đi`);
+    `Đã lưu quy định mới. Quy định chỉ áp dụng cho phiếu lập từ ngày ${formatDateVN(regulation.effectiveFrom)} trở đi`);
 }
 
 async function listLogs(req, res) {

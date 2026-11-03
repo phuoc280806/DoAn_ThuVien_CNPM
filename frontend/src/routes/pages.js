@@ -5,6 +5,10 @@ import BorrowPage from '../pages/librarian/BorrowPage';
 import ReturnPage from '../pages/librarian/ReturnPage';
 import FinesPage from '../pages/librarian/FinesPage';
 import RenewPage from '../pages/librarian/RenewPage';
+import AccountsPage from '../pages/admin/AccountsPage';
+import RegulationsPage from '../pages/admin/RegulationsPage';
+import AuditLogsPage from '../pages/admin/AuditLogsPage';
+import LoansPage from '../pages/admin/LoansPage';
 
 /**
  * DANH SÁCH TRANG — nơi duy nhất khai báo đường dẫn, quyền và menu.
@@ -52,10 +56,10 @@ export const PAGES = [
   { path: '/reports', label: 'Báo cáo thống kê', icon: 'bar-chart-line', roles: STAFF, uc: ['UC016'], phase: 'FE6' },
 
   // Admin (FE3)
-  { path: '/accounts', label: 'Tài khoản & phân quyền', icon: 'shield-lock', roles: ADMIN, uc: ['UC002'], phase: 'FE3' },
-  { path: '/regulations', label: 'Cấu hình quy định', icon: 'sliders', roles: ADMIN, uc: ['UC013', 'UC015'], phase: 'FE3' },
-  { path: '/audit-logs', label: 'Nhật ký thay đổi', icon: 'journal-text', roles: ADMIN, uc: ['UC014'], phase: 'FE3' },
-  { path: '/loans', label: 'Quản lý mượn trả', icon: 'clipboard-data', roles: ADMIN, uc: ['UC007', 'UC009'], phase: 'FE3' },
+  { path: '/accounts', label: 'Tài khoản & phân quyền', icon: 'shield-lock', roles: ADMIN, uc: ['UC002'], phase: 'FE3', component: AccountsPage },
+  { path: '/regulations', label: 'Cấu hình quy định', icon: 'sliders', roles: ADMIN, uc: ['UC013', 'UC015'], phase: 'FE3', component: RegulationsPage },
+  { path: '/audit-logs', label: 'Nhật ký thay đổi', icon: 'journal-text', roles: ADMIN, uc: ['UC014'], phase: 'FE3', component: AuditLogsPage },
+  { path: '/loans', label: 'Quản lý mượn trả', icon: 'clipboard-data', roles: ADMIN, uc: ['UC007', 'UC009'], phase: 'FE3', component: LoansPage },
 ];
 
 /** Menu bên trái theo vai trò: các nhóm, mỗi nhóm liệt kê đường dẫn trong PAGES. */

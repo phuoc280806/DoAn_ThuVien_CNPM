@@ -173,7 +173,70 @@ async function insertRenewalLog({ borrowDetailId, oldDueDate, newDueDate, renewe
   );
 }
 
+// ---------------------------------------------------------------------
+// Danh sách phiếu mượn (Admin – Quản lý mượn trả)
+// ---------------------------------------------------------------------
+
+// status: BORROWING | COMPLETED | OVERDUE (phiếu còn cuốn quá hạn chưa trả)
+function ticketFilters({ keyword, borrowId, status, from, to }) {
+  const where = [];
+  const params = [];
+  if (keyword) {
+    where.push('(r.reader_code LIKE ? OR r.full_name LIKE ? OR t.borrow_id = ?)');
+    params.push(`%${keyword}%`, `%${keyword}%`, borrowId ?? 0);
+  }
+  if (status === 'BORROWING' || status === 'COMPLETED') {
+    where.push('t.status = ?');
+    params.push(status);
+  }
+  if (status === 'OVERDUE') {
+    where.push(`EXISTS (SELECT 1 FROM borrow_details od
+                        WHERE od.borrow_id = t.borrow_id AND od.return_date IS NULL AND od.due_date < CURDATE())`);
+  }
+  if (from) {
+    where.push('t.borrow_date >= ?');
+    params.push(from);
+  }
+  if (to) {
+    where.push('t.borrow_date <= ?');
+    params.push(to);
+  }
+  return { sql: where.length ? `WHERE ${where.join(' AND ')}` : '', params };
+}
+
+async function searchTickets(filters, { limit, offset }, db = pool) {
+  const { sql, params } = ticketFilters(filters);
+  const [rows] = await db.query(
+    `SELECT t.borrow_id, t.borrow_date, t.status, t.completed_at, t.regulation_id,
+            t.snap_borrow_days, t.snap_fine_per_day, t.snap_max_fine_per_book, t.snap_renew_days,
+            r.reader_code, r.full_name AS reader_name, r.reader_type,
+            u.username AS librarian_username, u.full_name AS librarian_name,
+            COUNT(d.borrow_detail_id) AS total_books,
+            SUM(d.return_date IS NOT NULL) AS returned_books,
+            SUM(d.return_date IS NULL AND d.due_date < CURDATE()) AS overdue_books,
+            MIN(CASE WHEN d.return_date IS NULL THEN d.due_date END) AS next_due_date
+     FROM borrow_tickets t
+     JOIN readers r        ON r.reader_id = t.reader_id
+     JOIN users u          ON u.user_id = t.librarian_id
+     JOIN borrow_details d ON d.borrow_id = t.borrow_id
+     ${sql}
+     GROUP BY t.borrow_id
+     ORDER BY t.borrow_date DESC, t.borrow_id DESC
+     LIMIT ? OFFSET ?`,
+    [...params, limit, offset],
+  );
+  const [[{ total }]] = await db.query(
+    `SELECT COUNT(*) AS total
+     FROM borrow_tickets t
+     JOIN readers r ON r.reader_id = t.reader_id
+     ${sql}`,
+    params,
+  );
+  return { rows, total };
+}
+
 module.exports = {
+  searchTickets,
   findReaderByCode,
   listActiveItemsByReader,
   findActiveItemByCopyCode,

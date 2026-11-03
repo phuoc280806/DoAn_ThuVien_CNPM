@@ -25,4 +25,8 @@ async function renew(req, res) {
   ok(res, result, `Gia hạn thành công, hạn trả mới là ${formatDateVN(result.newDueDate)}`);
 }
 
-module.exports = { eligibility, create, getById, listActive, renew };
+async function list(req, res) {
+  ok(res, await service.listTickets(matchedData(req, { locations: ['query'] })));
+}
+
+module.exports = { eligibility, create, getById, listActive, renew, list };

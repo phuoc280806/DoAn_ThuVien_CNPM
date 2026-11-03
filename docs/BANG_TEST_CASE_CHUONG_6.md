@@ -11,7 +11,7 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
    - **Kiểm thử theo kịch bản đóng vai (Scenario-based Testing):** Kiểm chứng 6 tình huống diễn tập thực tế `TH1`–`TH6`.
    - **Kiểm thử tích hợp tự động (Automated Integration Testing):** Sử dụng `node:test` và `node:assert/strict` gọi trực tiếp REST API trên database kiểm thử riêng (`thuvien_thpt_test`), tự động nạp lại `database/schema.sql` và `database/seed.sql` trước mỗi bộ test để đảm bảo tính độc lập và lặp lại.
 2. **Công cụ kiểm thử:**
-   - Bộ test tự động: `cd backend && npm test` (11 file test, **91 ca kiểm thử tự động**).
+   - Bộ test tự động: `cd backend && npm test` (12 file test, **94 ca kiểm thử tự động**).
    - Bộ sưu tập Postman: `docs/ThuVien_THPT_Nhom07.postman_collection.json`.
    - Kịch bản kiểm thử SQL: `database/test_borrow_return.sql`.
    - Các file REST Client theo từng giai đoạn: `backend/requests/gd2-auth.http` → `gd9-reminders.http`.
@@ -94,7 +94,8 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 | 9 | `backend/tests/apply-regulation.test.js` | UC015 (TH6) | 6 | Phân quyền Admin, kiểm tra `3a`/`5a`/`5b`/`9a`, xem trước phiếu bị ảnh hưởng & cảnh báo quá hạn, áp dụng quy định mới & ngày thu hồi cố định trong transaction, ghi `ticket_snapshot_changes` |
 | 10 | `backend/tests/reports.test.js` | UC016 | 7 | Phân quyền, kiểm tra kỳ báo cáo (`6a`) và kỳ trống (`8a`), thống kê mượn/trả, sách quá hạn/trả trễ, tiền phạt & độc giả nợ, xuất file `.xlsx` và `.pdf` tiếng Việt |
 | 11 | `backend/tests/reminders.test.js` | UC017 (COULD) | 9 | Phân quyền, danh sách sắp đến hạn (≤ 3 ngày) & quá hạn, lọc trạng thái, chặn độc giả thiếu email (`4a`), giả lập gửi mail thành công, lỗi SMTP (`5a`) ghi `reminder_logs` & gửi lại, báo rõ khi chưa cấu hình SMTP, danh sách trống (`2a`) |
-| **Tổng** | **11 file test** | **UC001 – UC017 (TH1 – TH6)** | **91 test** | **Tất cả hoàn tất trên database kiểm thử độc lập `thuvien_thpt_test`** |
+| 12 | `backend/tests/audit.test.js` | UC002, UC014 (nhật ký), Quản lý mượn trả | 3 | Phân quyền Admin, nhật ký hệ thống ghi khóa / mở khóa tài khoản và lọc theo hành động / người / ngày; danh sách phiếu mượn kèm snapshot, lọc theo trạng thái (kể cả có sách quá hạn), mã phiếu, tên độc giả, khoảng ngày |
+| **Tổng** | **12 file test** | **UC001 – UC017 (TH1 – TH6)** | **94 test** | **Tất cả hoàn tất trên database kiểm thử độc lập `thuvien_thpt_test`** |
 
 
 ---
@@ -119,3 +120,11 @@ Thực hiện trên dữ liệu `database/seed.sql` (chạy `npm run db:reset` t
 | **GUI-12** | Thu tiền phạt – UC011 1a | Lọc `HS2026005`, thu khoản 3.000đ, lọc "Đã thu", xem lại biên lai `BL000002` | Báo còn nợ 3.000đ → sau khi thu báo không còn nợ; biên lai hiện đúng người thu, thời điểm thu | **PASS** |
 | **GUI-13** | Gia hạn – UC008 | Tìm `HS2026008`, `HS2026004`, `HS2026003` rồi gia hạn | Lần lượt hiện "Chỉ được gia hạn 1 lần", "Sách đã quá hạn…"; `HS2026003` gia hạn +7 ngày, báo hạn mới dạng dd/mm/yyyy | **PASS** |
 | **GUI-14** | Giao diện điện thoại (390px) | Mở menu, lập phiếu trên màn hình hẹp | Menu trượt và tự đóng khi chọn mục; các thẻ xếp dọc, không tràn ngang | **PASS** |
+| **GUI-15** | Tài khoản – UC002 | Admin tạo Thủ thư `TT03` (lần đầu nhập lại mật khẩu sai) | Báo "Mật khẩu nhập lại không khớp"; sửa xong báo "Tạo tài khoản thành công" | **PASS** |
+| **GUI-16** | Tài khoản – UC002 | Cấp tài khoản độc giả `HS9999999` (chưa có hồ sơ), rồi `HS2026011` | Lần 1 báo "Không tìm thấy hồ sơ độc giả HS9999999…"; lần 2 tạo thành công | **PASS** |
+| **GUI-17** | Tài khoản – UC002 | Đặt lại mật khẩu, đổi vai trò `TT03` sang Admin; khóa rồi mở khóa `HS2026001`; xem nút Khóa của chính `AD001` | Các thao tác báo thành công, bảng cập nhật vai trò / trạng thái; nút Khóa của tài khoản đang đăng nhập bị vô hiệu | **PASS** |
+| **GUI-18** | Cấu hình quy định – UC013 | Học sinh: phạt/ngày 50.000đ (> phạt tối đa); rồi 10 ngày, 2.000đ/ngày, hiệu lực hôm nay; lưu lại lần nữa cùng ngày | Báo "Phải lớn hơn hoặc bằng tiền phạt mỗi ngày"; hộp xác nhận liệt kê thay đổi cũ → mới; lưu thành phiên bản #5 "Đang hiệu lực"; lần lưu trùng ngày báo "Đã có quy định cho học sinh hiệu lực ngày …" | **PASS** |
+| **GUI-19** | Luồng demo 3 – UC013 → UC007 | Sau GUI-18, lập phiếu cho `HS2026001`, mở Quản lý mượn trả | Phiếu mới `PM000009` lưu "10 ngày · 2.000đ/ngày, phiên bản #5"; phiếu cũ `PM000001` vẫn "7 ngày · 1.000đ/ngày, phiên bản #3"; chi tiết phiếu hiện đúng snapshot | **PASS** |
+| **GUI-20** | Quản lý mượn trả | Lọc trạng thái "Có sách quá hạn" | Còn 2 phiếu `PM000003`, `PM000004` | **PASS** |
+| **GUI-21** | Áp dụng cho phiếu đang mượn – UC015 | Phạm vi Học sinh, tham số Số ngày mượn → Xem trước → Áp dụng (lần đầu bỏ trống lý do) | Xem trước 5 phiếu với hạn trả cũ → mới từng cuốn; thiếu lý do báo "Cần nhập lý do áp dụng"; áp dụng báo "Đã áp dụng quy định mới cho 5 phiếu đang mượn" | **PASS** |
+| **GUI-22** | Nhật ký – UC014 | Mở Nhật ký thay đổi, xem hai tab | Tab quy định có dòng "Áp dụng phiếu đang mượn" (lý do, 5 phiếu) và "Cấu hình quy định" (cũ → mới); tab hệ thống có 6 thao tác tài khoản ở GUI-15 → GUI-17 với người thực hiện, đối tượng, chi tiết | **PASS** |

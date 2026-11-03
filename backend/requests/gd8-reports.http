@@ -1,0 +1,145 @@
+### =====================================================================
+### Thử tay GĐ8 – Áp dụng quy định cho phiếu đang mượn & Báo cáo (UC015, UC016)
+###
+### Cách dùng: giống gd2-auth.http (extension REST Client, chạy npm run dev,
+### bấm "Send Request" theo thứ tự từ trên xuống).
+### Muốn chạy lại từ đầu: npm run db:reset
+### =====================================================================
+
+@baseUrl = http://localhost:5000/api
+
+### 1. Đăng nhập Admin
+# @name adminLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "AD001", "password": "Thuvien@2026" }
+
+### 2. Đăng nhập Thủ thư
+# @name librarianLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "username": "TT01", "password": "Thuvien@2026" }
+
+###
+@admin = {{adminLogin.response.body.data.token}}
+@librarian = {{librarianLogin.response.body.data.token}}
+
+
+### ---------------------------------------------------------------------
+### UC015 – ÁP DỤNG QUY ĐỊNH MỚI CHO PHIẾU ĐANG MƯỢN (Admin, TH6)
+### ---------------------------------------------------------------------
+
+### 3. Tạo quy định mới cho học sinh hiệu lực từ HÔM NAY (hạn mượn 3 ngày, phạt 2.000đ/ngày)
+POST {{baseUrl}}/regulations
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT",
+  "maxBooks": 3,
+  "borrowDays": 3,
+  "finePerDay": 2000,
+  "maxFinePerBook": 30000,
+  "renewDays": 7,
+  "effectiveFrom": "{{$datetime 'YYYY-MM-DD'}}"
+}
+
+### 4. (TH6) Xem phiếu PM000001 trước khi áp dụng → vẫn giữ snapshot cũ (7 ngày, 1.000đ/ngày)
+GET {{baseUrl}}/loans/1
+Authorization: Bearer {{librarian}}
+
+### 5. (UC015 bước 4–6) Xem trước các phiếu học sinh đang mượn bị ảnh hưởng + cảnh báo chuyển sang quá hạn
+POST {{baseUrl}}/regulations/apply-active-loans/preview
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT",
+  "params": ["borrowDays", "finePerDay"]
+}
+
+### 6. (9a) Áp dụng nhưng thiếu lý do → 400 "Cần nhập lý do áp dụng"
+POST {{baseUrl}}/regulations/apply-active-loans
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT",
+  "params": ["borrowDays", "finePerDay"],
+  "reason": ""
+}
+
+### 7. (UC015 bước 7–12) Xác nhận áp dụng cho các phiếu học sinh đang mượn (có ghi regulation_logs & ticket_snapshot_changes)
+POST {{baseUrl}}/regulations/apply-active-loans
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "STUDENT",
+  "params": ["borrowDays", "finePerDay"],
+  "reason": "Đồng bộ quy định học kỳ 2"
+}
+
+### 8. Xem lại phiếu PM000001 → snapshot đã đổi thành 3 ngày, 2.000đ/ngày
+GET {{baseUrl}}/loans/1
+Authorization: Bearer {{librarian}}
+
+### 9. Xem nhật ký thay đổi quy định → dòng mới nhất có changeType = APPLY_ACTIVE_LOANS, kèm lý do và số phiếu bị ảnh hưởng
+GET {{baseUrl}}/regulations/logs?pageSize=5
+Authorization: Bearer {{admin}}
+
+### 10. Áp dụng ngày thu hồi cố định cuối năm học cho TẤT CẢ phiếu đang mượn
+POST {{baseUrl}}/regulations/apply-active-loans
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{
+  "readerType": "ALL",
+  "params": ["borrowDays"],
+  "fixedDueDate": "{{$datetime 'YYYY-MM-DD' 15 d}}",
+  "reason": "Thu hồi sách cuối năm học"
+}
+
+
+### ---------------------------------------------------------------------
+### UC016 – BÁO CÁO THỐNG KÊ & XUẤT EXCEL / PDF (Thủ thư, Admin)
+### ---------------------------------------------------------------------
+
+### 11. (UC016 - 1) Báo cáo thống kê mượn/trả 60 ngày qua
+GET {{baseUrl}}/reports/loans?from={{$datetime 'YYYY-MM-DD' -60 d}}&to={{$datetime 'YYYY-MM-DD'}}
+Authorization: Bearer {{librarian}}
+
+### 12. (UC016 - 2) Báo cáo sách trả trễ và đang quá hạn 60 ngày qua
+GET {{baseUrl}}/reports/overdue?from={{$datetime 'YYYY-MM-DD' -60 d}}&to={{$datetime 'YYYY-MM-DD'}}
+Authorization: Bearer {{librarian}}
+
+### 13. (UC016 - 3) Báo cáo tiền phạt đã thu / chưa thu và danh sách độc giả còn nợ
+GET {{baseUrl}}/reports/fines?from={{$datetime 'YYYY-MM-DD' -60 d}}&to={{$datetime 'YYYY-MM-DD'}}
+Authorization: Bearer {{librarian}}
+
+### 14. (6a) Kỳ báo cáo không hợp lệ (Từ ngày > Đến ngày) → 400 "Kỳ báo cáo không hợp lệ"
+GET {{baseUrl}}/reports/loans?from={{$datetime 'YYYY-MM-DD'}}&to={{$datetime 'YYYY-MM-DD' -5 d}}
+Authorization: Bearer {{librarian}}
+
+### 15. (6a) Đến ngày ở tương lai → 400 "Kỳ báo cáo không hợp lệ"
+GET {{baseUrl}}/reports/loans?from={{$datetime 'YYYY-MM-DD'}}&to={{$datetime 'YYYY-MM-DD' 1 d}}
+Authorization: Bearer {{librarian}}
+
+### 16. (8a) Kỳ không có dữ liệu → 200 kèm message "Không có dữ liệu trong kỳ đã chọn"
+GET {{baseUrl}}/reports/loans?from={{$datetime 'YYYY-MM-DD' -300 d}}&to={{$datetime 'YYYY-MM-DD' -250 d}}
+Authorization: Bearer {{librarian}}
+
+### 17. Xuất báo cáo mượn/trả ra Excel (.xlsx)
+GET {{baseUrl}}/reports/loans/export?from={{$datetime 'YYYY-MM-DD' -60 d}}&to={{$datetime 'YYYY-MM-DD'}}&format=xlsx
+Authorization: Bearer {{librarian}}
+
+### 18. Xuất báo cáo sách quá hạn / trả trễ ra PDF (.pdf)
+GET {{baseUrl}}/reports/overdue/export?from={{$datetime 'YYYY-MM-DD' -60 d}}&to={{$datetime 'YYYY-MM-DD'}}&format=pdf
+Authorization: Bearer {{librarian}}
+
+### 19. Xuất báo cáo tiền phạt ra PDF (.pdf)
+GET {{baseUrl}}/reports/fines/export?from={{$datetime 'YYYY-MM-DD' -60 d}}&to={{$datetime 'YYYY-MM-DD'}}&format=pdf
+Authorization: Bearer {{librarian}}
+

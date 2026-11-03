@@ -27,7 +27,11 @@ async function startApp() {
       },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-    return { status: res.status, body: await res.json() };
+    const contentType = res.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      return { status: res.status, headers: res.headers, body: await res.json() };
+    }
+    return { status: res.status, headers: res.headers, buffer: Buffer.from(await res.arrayBuffer()) };
   }
 
   async function login(username, password = PASSWORD) {

@@ -75,8 +75,8 @@ Mỗi phiếu mượn lưu **snapshot quy định** tại thời điểm lập p
 | Phần | Công nghệ |
 |---|---|
 | Frontend | ReactJS (Vite), Bootstrap, Axios, React Router |
-| Backend | Node.js, Express, mysql2, JWT |
-| Database | MySQL 8 |
+| Backend | Node.js, Express 5, mysql2, JWT, express-validator, exceljs, pdfkit, nodemailer |
+| Database | MySQL 8 (`utf8mb4_0900_ai_ci`) |
 
 ## Cấu trúc thư mục
 
@@ -112,36 +112,76 @@ DoAn_ThuVien_CNPM/
 
 Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận request/trả response → `service` xử lý nghiệp vụ → `repository` chứa câu SQL.
 
-## Cài đặt và chạy
+## Cài đặt và sử dụng (Chương 7)
 
-Yêu cầu: Node.js 20 trở lên, MySQL 8 (đang chạy), Git.
+### 1. Đối tượng và phạm vi sử dụng
+
+- **Độc giả (Học sinh, Giáo viên):** Đăng nhập, tra cứu sách theo tên/tác giả/ISBN/thể loại (hỗ trợ tìm không dấu), xem số lượng bản sách còn khả dụng, theo dõi lịch sử mượn/trả, các khoản phạt và biên lai thu phạt của chính mình.
+- **Thủ thư:** Quản lý hồ sơ độc giả và thẻ thư viện (cấp, gia hạn, khóa/mở khóa thẻ), quản lý đầu sách và trạng thái từng bản sách (`BS000001`...), lập phiếu mượn, gia hạn sách đang mượn, nhận trả sách và tính tiền phạt tự động theo snapshot, thu tiền phạt và xuất biên lai điện tử (`BL000001`...), xem và xuất báo cáo thống kê ra Excel/PDF, gửi email nhắc hạn trả.
+- **Admin (Ban giám hiệu):** Quản lý tài khoản và phân quyền, cấu hình quy định mượn/trả theo vai trò độc giả có ngày hiệu lực, xem nhật ký thay đổi quy định, áp dụng quy định mới cho các phiếu đang mượn trong trường hợp đặc biệt (kèm lý do); đồng thời kế thừa mọi quyền của Thủ thư.
+
+### 2. Yêu cầu cài đặt
+
+- **Hệ điều hành:** Windows 10/11, macOS hoặc Linux.
+- **Node.js:** Phiên bản `20.x` trở lên (kèm `npm`).
+- **Hệ quản trị CSDL:** MySQL Server `8.0` trở lên (hỗ trợ bảng mã `utf8mb4` và collation `utf8mb4_0900_ai_ci`).
+- **Công cụ hỗ trợ:** Git, trình duyệt web hiện đại (Chrome, Edge, Firefox), tùy chọn MySQL Workbench và Postman / VS Code REST Client.
+
+### 3. Các bước cài đặt chi tiết
 
 ```bash
 git clone https://github.com/phuoc280806/DoAn_ThuVien_CNPM.git
 cd DoAn_ThuVien_CNPM
 
-# 1. Backend
+# 1. Cài đặt và cấu hình Backend
 cd backend
 cp .env.example .env      # mở .env, điền DB_PASSWORD là mật khẩu MySQL của máy bạn
 npm install
 
-# 2. Tạo database thuvien_thpt và nạp dữ liệu mẫu
+# 2. Tạo database thuvien_thpt và nạp dữ liệu mẫu (schema.sql + seed.sql)
 npm run db:reset
 
-# 3. Chạy backend (http://localhost:5000)
-npm run dev               # kiểm tra: mở http://localhost:5000/api/health
+# 3. Chạy server Backend (http://localhost:5000)
+npm run dev               # kiểm tra nhanh: mở http://localhost:5000/api/health
 
-# Chạy test tự động (dùng database riêng thuvien_thpt_test, không ảnh hưởng dữ liệu đang dùng)
+# 4. Chạy toàn bộ 88 ca kiểm thử tự động (dùng DB riêng thuvien_thpt_test, không ảnh hưởng dữ liệu chính)
 npm test
 
-# 4. Frontend (http://localhost:5173) – chưa có
+# 5. Chạy Frontend (http://localhost:5173)
 cd ../frontend
 cp .env.example .env
 npm install
 npm run dev
 ```
 
+#### Cấu hình biến môi trường (`backend/.env`)
+
+| Biến | Mặc định | Mô tả |
+|---|---|---|
+| `PORT` | `5000` | Cổng chạy server Backend |
+| `DB_HOST`, `DB_PORT` | `localhost`, `3306` | Địa chỉ và cổng kết nối MySQL |
+| `DB_USER`, `DB_PASSWORD` | `root`, *(trống)* | Tài khoản và mật khẩu MySQL |
+| `DB_NAME` | `thuvien_thpt` | Tên cơ sở dữ liệu chính |
+| `JWT_SECRET`, `JWT_EXPIRES_IN` | `...`, `1d` | Khóa bí mật và thời hạn của JWT token |
+| `CLIENT_URL` | `http://localhost:5173` | Địa chỉ Frontend được phép gọi CORS |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | *(tùy chọn)* | Cấu hình SMTP (ví dụ Gmail App Password) để gửi email nhắc hạn thật ở UC017; nếu để trống hệ thống dùng chế độ giả lập an toàn |
+
 `npm run db:reset` **xóa sạch** database `thuvien_thpt` rồi tạo lại từ `database/schema.sql` và `database/seed.sql`. Dùng lệnh này mỗi khi có người sửa schema, hoặc khi muốn đưa dữ liệu về trạng thái ban đầu. Cũng có thể mở hai file SQL này trong MySQL Workbench và chạy lần lượt.
+
+### 4. Hướng dẫn sử dụng và kiểm thử nhanh
+
+1. **Qua giao diện Web / API REST:**
+   - **Độc giả:** Đăng nhập bằng mã độc giả (ví dụ `HS2026001` / `Thuvien@2026`) → vào mục **Tra cứu sách** (`GET /api/books`) để tìm sách và xem số bản khả dụng → vào **Lịch sử mượn trả** (`GET /api/me/loans`) để xem các cuốn đang mượn, hạn trả, tiền phạt và biên lai.
+   - **Thủ thư:** Đăng nhập bằng `TT01` / `Thuvien@2026`:
+     - **Lập phiếu mượn (UC007):** Nhập mã độc giả (`GET /api/loans/eligibility/:readerCode`) để kiểm tra điều kiện → quét các mã bản sách (`BS000005`...) và xác nhận lập phiếu (`POST /api/loans`).
+     - **Gia hạn (UC008):** Tìm sách đang mượn (`GET /api/loans/active`) → bấm gia hạn 1 lần (`POST /api/loans/items/:id/renew`).
+     - **Trả sách & Thu phạt (UC009–UC011):** Quét mã bản sách (`GET /api/returns/lookup/:copyCode`) để xem trước số ngày trễ và tiền phạt → xác nhận trả (`POST /api/returns`) → nếu có phạt thì thu tiền phạt (`POST /api/fines/:id/pay`) và in biên lai điện tử (`GET /api/fines/:id/receipt`).
+     - **Báo cáo & Nhắc hạn (UC016–UC017):** Xem thống kê mượn/trả, quá hạn, tiền phạt và xuất file Excel/PDF (`/api/reports/...`); xem danh sách sắp đến hạn/quá hạn và gửi email nhắc (`/api/reminders/...`).
+   - **Admin:** Đăng nhập bằng `AD001` / `Thuvien@2026` → quản lý tài khoản (`/api/users`), cấu hình quy định mới có ngày hiệu lực (`/api/regulations`), xem nhật ký thay đổi (`/api/regulations/logs`) hoặc áp dụng quy định cho các phiếu đang mượn kèm lý do (`/api/regulations/apply-active-loans`).
+2. **Qua Postman hoặc VS Code REST Client:**
+   - Import file **[docs/ThuVien_THPT_Nhom07.postman_collection.json](docs/ThuVien_THPT_Nhom07.postman_collection.json)** vào Postman. Khi chạy request **Đăng nhập**, token sẽ tự động lưu vào biến `{{token}}` của Collection.
+   - Hoặc mở trực tiếp các file `backend/requests/gd1-health.http` → `gd9-reminders.http` bằng extension **REST Client** trên VS Code.
+   - Bảng ca kiểm thử chi tiết cho Chương 6 của tiểu luận: **[docs/BANG_TEST_CASE_CHUONG_6.md](docs/BANG_TEST_CASE_CHUONG_6.md)**.
 
 ### Tài khoản mẫu
 
@@ -289,11 +329,13 @@ Không chắc nên giữ phần nào thì hỏi người viết đoạn code kia
 ## Tiến độ
 
 Lộ trình chi tiết của backend và các quyết định bổ sung cho đặc tả: [docs/LO_TRINH_BACKEND.md](docs/LO_TRINH_BACKEND.md).
+Bảng kiểm thử chi tiết (Chương 6): [docs/BANG_TEST_CASE_CHUONG_6.md](docs/BANG_TEST_CASE_CHUONG_6.md).
+Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs/ThuVien_THPT_Nhom07.postman_collection.json).
 
 - [x] Khảo sát bài toán, đặc tả use case (chương 1–2)
-- [ ] Phân tích: lớp phân tích, biểu đồ trình tự, ERD
-- [ ] Thiết kế cơ sở dữ liệu
-- [ ] Backend
+- [x] Phân tích: lớp phân tích, biểu đồ trình tự, ERD
+- [x] Thiết kế cơ sở dữ liệu (`database/schema.sql`, `database/seed.sql`)
+- [x] Backend (GĐ1 → GĐ9, đầy đủ 17 Use Case UC001–UC017)
 - [ ] Frontend
-- [ ] Kiểm thử
-- [ ] Hướng dẫn cài đặt và sử dụng
+- [x] Kiểm thử (88 test tự động + Postman Collection + Bảng test case Chương 6)
+- [x] Hướng dẫn cài đặt và sử dụng (Chương 7)

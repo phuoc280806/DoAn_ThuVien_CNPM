@@ -20,4 +20,24 @@ async function listLogs(req, res) {
   ok(res, await service.listLogs(matchedData(req, { locations: ['query'] })));
 }
 
-module.exports = { overview, current, create, listLogs };
+async function previewActiveLoans(req, res) {
+  const result = await service.previewActiveLoans(matchedData(req, { locations: ['body'] }));
+  ok(res, result);
+}
+
+async function applyActiveLoans(req, res) {
+  const result = await service.applyActiveLoans(
+    matchedData(req, { locations: ['body'] }),
+    { userId: req.user.userId },
+  );
+  ok(res, result, `Đã áp dụng quy định mới cho ${result.affectedTickets} phiếu đang mượn`);
+}
+
+module.exports = {
+  overview,
+  current,
+  create,
+  listLogs,
+  previewActiveLoans,
+  applyActiveLoans,
+};

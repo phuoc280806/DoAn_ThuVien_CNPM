@@ -3,7 +3,8 @@ const service = require('./readers.service');
 const { ok, created } = require('../../utils/response');
 
 async function list(req, res) {
-  ok(res, await service.list(matchedData(req, { locations: ['query'] })));
+  const data = await service.list(matchedData(req, { locations: ['query'] }));
+  ok(res, data, data.items.length === 0 ? 'Không tìm thấy độc giả' : undefined);
 }
 
 async function getById(req, res) {

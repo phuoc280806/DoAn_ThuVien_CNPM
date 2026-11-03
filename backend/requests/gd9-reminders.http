@@ -1,0 +1,45 @@
+@baseUrl = http://localhost:5000/api
+@token = DÁN_TOKEN_THỦ_THƯ_HOẶC_ADMIN_VÀO_ĐÂY
+
+### 1. Đăng nhập Thủ thư (TT01) để lấy token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "TT01",
+  "password": "Thuvien@2026"
+}
+
+### 2. UC017 - Xem danh sách tất cả mục sắp đến hạn (còn <= 3 ngày) và đã quá hạn
+GET {{baseUrl}}/reminders
+Authorization: Bearer {{token}}
+
+### 3. UC017 - Lọc chỉ các mục sắp đến hạn (DUE_SOON)
+GET {{baseUrl}}/reminders?status=DUE_SOON
+Authorization: Bearer {{token}}
+
+### 4. UC017 - Lọc chỉ các mục đã quá hạn (OVERDUE)
+GET {{baseUrl}}/reminders?status=OVERDUE
+Authorization: Bearer {{token}}
+
+### 5. UC017 - Thử gửi nhắc hạn cho độc giả thiếu email (borrowDetailId = 6 - HS2026006) -> Báo lỗi 4a (409)
+POST {{baseUrl}}/reminders/send
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "borrowDetailIds": [6]
+}
+
+### 6. UC017 - Gửi email nhắc hạn cho các mục hợp lệ (borrowDetailId = 4, 5)
+POST {{baseUrl}}/reminders/send
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "borrowDetailIds": [4, 5]
+}
+
+### 7. UC017 - Xem lịch sử gửi email nhắc hạn (reminder_logs)
+GET {{baseUrl}}/reminders/logs
+Authorization: Bearer {{token}}

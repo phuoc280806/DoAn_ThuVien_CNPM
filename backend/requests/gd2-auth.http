@@ -193,3 +193,17 @@ Authorization: Bearer {{admin.response.body.data.token}}
 Content-Type: application/json
 
 { "role": "LIBRARIAN" }
+
+### 27. Tự đổi mật khẩu, nhập sai mật khẩu hiện tại → 400 "Mật khẩu hiện tại chưa đúng"
+PATCH {{baseUrl}}/auth/password
+Authorization: Bearer {{librarian.response.body.data.token}}
+Content-Type: application/json
+
+{ "currentPassword": "sai-mat-khau", "newPassword": "MatKhauMoi@2026" }
+
+### 28. Tự đổi mật khẩu (TT01) → 200 "Đổi mật khẩu thành công"; chạy lại npm run db:reset để về mật khẩu cũ
+PATCH {{baseUrl}}/auth/password
+Authorization: Bearer {{librarian.response.body.data.token}}
+Content-Type: application/json
+
+{ "currentPassword": "Thuvien@2026", "newPassword": "MatKhauMoi@2026" }

@@ -11,7 +11,7 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
    - **Kiểm thử theo kịch bản đóng vai (Scenario-based Testing):** Kiểm chứng 6 tình huống diễn tập thực tế `TH1`–`TH6`.
    - **Kiểm thử tích hợp tự động (Automated Integration Testing):** Sử dụng `node:test` và `node:assert/strict` gọi trực tiếp REST API trên database kiểm thử riêng (`thuvien_thpt_test`), tự động nạp lại `database/schema.sql` và `database/seed.sql` trước mỗi bộ test để đảm bảo tính độc lập và lặp lại.
 2. **Công cụ kiểm thử:**
-   - Bộ test tự động: `cd backend && npm test` (11 file test, **90 ca kiểm thử tự động**).
+   - Bộ test tự động: `cd backend && npm test` (11 file test, **91 ca kiểm thử tự động**).
    - Bộ sưu tập Postman: `docs/ThuVien_THPT_Nhom07.postman_collection.json`.
    - Kịch bản kiểm thử SQL: `database/test_borrow_return.sql`.
    - Các file REST Client theo từng giai đoạn: `backend/requests/gd2-auth.http` → `gd9-reminders.http`.
@@ -83,7 +83,7 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 
 | STT | File kiểm thử | Phạm vi Use Case | Số lượng test | Nội dung kiểm chứng chính |
 |---|---|---|---|---|
-| 1 | `backend/tests/auth.test.js` | Health, UC001 | 6 | `/api/health`, đăng nhập đúng/sai/thiếu trường/bị khóa, `/api/auth/me`, đăng xuất, phân quyền `authorize` |
+| 1 | `backend/tests/auth.test.js` | Health, UC001 | 7 | `/api/health`, đăng nhập đúng/sai/thiếu trường/bị khóa, `/api/auth/me`, đăng xuất, phân quyền `authorize`, tự đổi mật khẩu |
 | 2 | `backend/tests/users.test.js` | UC002 | 9 | Danh sách/tìm kiếm tài khoản, tạo Thủ thư, cấp tài khoản Độc giả, khóa/mở khóa, đặt lại mật khẩu, đổi vai trò, bảo vệ Admin duy nhất (`7c`), `audit_logs` |
 | 3 | `backend/tests/readers.test.js` | UC003 | 8 | Danh sách/tìm kiếm không dấu, thêm/sửa hồ sơ độc giả, đồng bộ họ tên tài khoản, cấp thẻ, gia hạn thẻ, khóa/mở khóa thẻ |
 | 4 | `backend/tests/books.test.js` | UC004, UC005, UC006 | 12 | Kiểm tra ISBN-13, tra cứu không dấu & số bản khả dụng, ẩn sách với độc giả, thêm/sửa/xóa hoặc ẩn đầu sách, nhập thêm bản sách, đổi trạng thái bản sách và `copy_status_logs` |
@@ -94,5 +94,5 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 | 9 | `backend/tests/apply-regulation.test.js` | UC015 (TH6) | 6 | Phân quyền Admin, kiểm tra `3a`/`5a`/`5b`/`9a`, xem trước phiếu bị ảnh hưởng & cảnh báo quá hạn, áp dụng quy định mới & ngày thu hồi cố định trong transaction, ghi `ticket_snapshot_changes` |
 | 10 | `backend/tests/reports.test.js` | UC016 | 7 | Phân quyền, kiểm tra kỳ báo cáo (`6a`) và kỳ trống (`8a`), thống kê mượn/trả, sách quá hạn/trả trễ, tiền phạt & độc giả nợ, xuất file `.xlsx` và `.pdf` tiếng Việt |
 | 11 | `backend/tests/reminders.test.js` | UC017 (COULD) | 9 | Phân quyền, danh sách sắp đến hạn (≤ 3 ngày) & quá hạn, lọc trạng thái, chặn độc giả thiếu email (`4a`), giả lập gửi mail thành công, lỗi SMTP (`5a`) ghi `reminder_logs` & gửi lại, báo rõ khi chưa cấu hình SMTP, danh sách trống (`2a`) |
-| **Tổng** | **11 file test** | **UC001 – UC017 (TH1 – TH6)** | **90 test** | **Tất cả hoàn tất trên database kiểm thử độc lập `thuvien_thpt_test`** |
+| **Tổng** | **11 file test** | **UC001 – UC017 (TH1 – TH6)** | **91 test** | **Tất cả hoàn tất trên database kiểm thử độc lập `thuvien_thpt_test`** |
 

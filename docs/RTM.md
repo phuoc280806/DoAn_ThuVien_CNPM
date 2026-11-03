@@ -2,7 +2,7 @@
 
 Liên kết từng yêu cầu trong **Yêu cầu theo đề tài – Nhóm 7** ([2611COMP104406_Yeu-cau (1)_removed.pdf](2611COMP104406_Yeu-cau%20(1)_removed.pdf)) với Use Case trong đặc tả ([N7.pdf](N7.pdf)), module backend và ca kiểm thử trong [BANG_TEST_CASE_CHUONG_6.md](BANG_TEST_CASE_CHUONG_6.md).
 
-Kết quả kiểm thử lấy từ lần chạy `cd backend && npm test` ngày **03/11/2026**: **90/90 test PASS**.
+Kết quả kiểm thử lấy từ lần chạy `cd backend && npm test` ngày **03/11/2026**: **91/91 test PASS**.
 
 ## 1. Yêu cầu chức năng ↔ Use Case ↔ Test case
 

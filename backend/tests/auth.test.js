@@ -56,3 +56,23 @@ test('UC001 9b: đăng xuất', async () => {
   const res = await t.api('POST', '/auth/logout', { token });
   assert.equal(res.status, 200);
 });
+
+test('Tự đổi mật khẩu: kiểm tra mật khẩu hiện tại, đăng nhập bằng mật khẩu mới, ghi audit_logs', async () => {
+  const token = await t.login('GV2026003');
+  const change = (body, tk = token) => t.api('PATCH', '/auth/password', { token: tk, body });
+
+  assert.equal((await t.api('PATCH', '/auth/password', { body: {} })).status, 401);
+  assert.equal((await change({ currentPassword: 'sai-mat-khau', newPassword: 'MatKhauMoi@1' })).body.message, 'Mật khẩu hiện tại chưa đúng');
+  assert.equal((await change({ currentPassword: PASSWORD, newPassword: 'ngan' })).body.message, 'Mật khẩu tối thiểu 8 ký tự');
+  assert.equal((await change({ currentPassword: PASSWORD, newPassword: PASSWORD })).body.message, 'Mật khẩu mới phải khác mật khẩu hiện tại');
+
+  const res = await change({ currentPassword: PASSWORD, newPassword: 'MatKhauMoi@1' });
+  assert.equal(res.status, 200);
+  assert.equal(res.body.message, 'Đổi mật khẩu thành công');
+
+  assert.equal((await t.api('POST', '/auth/login', { body: { username: 'GV2026003', password: PASSWORD } })).status, 401);
+  await t.login('GV2026003', 'MatKhauMoi@1');
+
+  const [[log]] = await t.pool.query("SELECT * FROM audit_logs WHERE action = 'CHANGE_OWN_PASSWORD'");
+  assert.equal(log.target_id, log.user_id);
+});

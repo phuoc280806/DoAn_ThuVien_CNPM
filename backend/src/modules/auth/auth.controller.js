@@ -16,4 +16,10 @@ async function me(req, res) {
   ok(res, await service.me(req.user.userId));
 }
 
-module.exports = { login, logout, me };
+async function changePassword(req, res) {
+  const { currentPassword, newPassword } = matchedData(req);
+  await service.changePassword(req.user.userId, currentPassword, newPassword, req.ip);
+  ok(res, null, 'Đổi mật khẩu thành công');
+}
+
+module.exports = { login, logout, me, changePassword };

@@ -100,17 +100,37 @@ DoAn_ThuVien_CNPM/
 │           └── regulations/  reports/  reminders/
 └── frontend/
     └── src/
-        ├── api/           # gọi API backend
-        ├── context/       # AuthContext
-        ├── routes/        # định tuyến, chặn theo vai trò
-        ├── layouts/
-        ├── components/    # component dùng chung
-        ├── pages/         # auth/  reader/  librarian/  admin/
+        ├── api/           # gọi API backend (client.js: axios dùng chung, tự gắn token)
+        ├── context/       # AuthContext (đăng nhập), ToastContext (thông báo nhanh)
+        ├── routes/        # pages.js: danh sách trang + menu theo vai trò; RequireAuth: chặn theo vai trò
+        ├── layouts/       # MainLayout, Sidebar, Topbar
+        ├── components/    # PageHeader, ConfirmModal, LoadingScreen, ComingSoon
+        ├── pages/         # auth/  common/  reader/  librarian/  admin/
+        ├── styles/        # theme.scss: Bootstrap theo bảng màu prototype
         ├── hooks/
-        └── utils/
+        └── utils/         # roles.js (vai trò, kiểm tra quyền), format.js (ngày dd/mm/yyyy, tiền 1.000đ)
 ```
 
 Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận request/trả response → `service` xử lý nghiệp vụ → `repository` chứa câu SQL.
+
+### Frontend: phân công và cách thêm một trang
+
+| Giai đoạn | Nội dung | Phụ trách |
+|---|---|---|
+| FE1 | Khung dự án, đăng nhập, menu theo vai trò, chặn route, tài khoản cá nhân | Phước (xong) |
+| FE2 | Thủ thư: lập phiếu mượn, trả sách, thu phạt, gia hạn (UC007–UC011) | Phước |
+| FE3 | Admin: tài khoản, cấu hình quy định, nhật ký, áp dụng cho phiếu đang mượn, quản lý mượn trả (UC002, UC013–UC015) | Phước |
+| FE4 | Độc giả: tra cứu sách, sách đang mượn, lịch sử, tiền phạt (UC006, UC012) | |
+| FE5 | Quản lý độc giả & thẻ, đầu sách, bản sách (UC003–UC005) | |
+| FE6 | Báo cáo, nhắc hạn, số liệu trang Tổng quan (UC016, UC017) | |
+
+Mọi trang đã được khai báo sẵn trong `frontend/src/routes/pages.js` (đường dẫn, vai trò, icon, menu). Làm một trang:
+
+1. Tạo component trong `src/pages/<reader|librarian|admin>/`, ví dụ `src/pages/reader/SearchPage.jsx`. Dùng `PageHeader` cho tiêu đề, component của `react-bootstrap` cho bảng/form.
+2. Gọi API qua `src/api/`: thêm file như `src/api/books.js` với `client.get('/books', { params })`. Kết quả trả về là `{ success, data, message }`; lỗi lấy câu thông báo bằng `errorMessage(err)`.
+3. Mở `src/routes/pages.js`, import component và gán vào `component` của trang đó. Menu, đường dẫn và kiểm tra quyền tự có, không cần sửa router.
+4. Thông báo thành công/lỗi dùng `useToast()`; hỏi xác nhận dùng `ConfirmModal`; ngày và tiền dùng `formatDate`, `formatMoney`.
+5. Giao diện tham khảo thư mục `figma/` (không có trên git, xin file từ người phụ trách). Thông báo và nhãn trạng thái theo đặc tả N7.
 
 ## Cài đặt và sử dụng (Chương 7)
 
@@ -123,7 +143,7 @@ Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận 
 ### 2. Yêu cầu cài đặt
 
 - **Hệ điều hành:** Windows 10/11, macOS hoặc Linux.
-- **Node.js:** Phiên bản `20.x` trở lên (kèm `npm`).
+- **Node.js:** Phiên bản `20.19` trở lên hoặc `22.12` trở lên (kèm `npm`); Vite 8 của frontend yêu cầu mức này.
 - **Hệ quản trị CSDL:** MySQL Server `8.0` trở lên (hỗ trợ bảng mã `utf8mb4` và collation `utf8mb4_0900_ai_ci`).
 - **Công cụ hỗ trợ:** Git, trình duyệt web hiện đại (Chrome, Edge, Firefox), tùy chọn MySQL Workbench và Postman / VS Code REST Client.
 
@@ -144,15 +164,17 @@ npm run db:reset
 # 3. Chạy server Backend (http://localhost:5000)
 npm run dev               # kiểm tra nhanh: mở http://localhost:5000/api/health
 
-# 4. Chạy toàn bộ 90 ca kiểm thử tự động (dùng DB riêng thuvien_thpt_test, không ảnh hưởng dữ liệu chính)
+# 4. Chạy toàn bộ 91 ca kiểm thử tự động (dùng DB riêng thuvien_thpt_test, không ảnh hưởng dữ liệu chính)
 npm test
 
-# 5. Chạy Frontend (http://localhost:5173) – đang làm, chưa chạy được
+# 5. Chạy Frontend (http://localhost:5173), mở terminal khác, backend vẫn chạy
 cd ../frontend
-cp .env.example .env
+cp .env.example .env      # VITE_API_URL trỏ tới backend, mặc định http://localhost:5000/api
 npm install
 npm run dev
 ```
+
+Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân) đã xong; các trang chưa làm hiện "Trang đang được xây dựng" kèm giai đoạn phụ trách.
 
 #### Cấu hình biến môi trường (`backend/.env`)
 
@@ -338,6 +360,6 @@ Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs
 - [x] Phân tích: lớp phân tích, biểu đồ trình tự, ERD
 - [x] Thiết kế cơ sở dữ liệu (`database/schema.sql`, `database/seed.sql`)
 - [x] Backend (GĐ1 → GĐ9, đầy đủ 17 Use Case UC001–UC017)
-- [ ] Frontend
-- [x] Kiểm thử (90 test tự động + Postman Collection + Bảng test case Chương 6)
+- [ ] Frontend (FE1 xong; FE2–FE6 đang làm)
+- [x] Kiểm thử (91 test tự động + Postman Collection + Bảng test case Chương 6)
 - [x] Hướng dẫn cài đặt và sử dụng (Chương 7)

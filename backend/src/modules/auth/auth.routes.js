@@ -21,4 +21,16 @@ router.post('/logout', authenticate, controller.logout);
 
 router.get('/me', authenticate, controller.me);
 
+// Người dùng tự đổi mật khẩu của mình (bổ sung ngoài 17 UC, phục vụ trang cá nhân)
+router.patch(
+  '/password',
+  authenticate,
+  body('currentPassword').isString().withMessage('Cần nhập mật khẩu hiện tại').notEmpty().withMessage('Cần nhập mật khẩu hiện tại'),
+  body('newPassword')
+    .isString().withMessage('Cần nhập mật khẩu mới')
+    .isLength({ min: 8 }).withMessage('Mật khẩu tối thiểu 8 ký tự'),
+  validate,
+  controller.changePassword,
+);
+
 module.exports = router;

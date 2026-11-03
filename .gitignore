@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Claude Code (cấu hình cá nhân)
+.claude/
+
+# File thiết kế Figma (không đưa lên git)
+/figma/
+
+# Code mẫu FE4–FE6 để các thành viên tự chép vào dự án (không đưa lên git)
+/FE456/

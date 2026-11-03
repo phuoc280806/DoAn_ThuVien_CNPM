@@ -41,7 +41,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-      <ToastContainer position="top-end" className="p-3 position-fixed" style={{ zIndex: 1090 }}>
+      <ToastContainer position="top-end" className="p-3 position-fixed d-print-none" style={{ zIndex: 1090 }}>
         {toasts.map((t) => (
           <Toast key={t.id} onClose={() => remove(t.id)} delay={t.type === 'error' ? 6000 : 4000} autohide>
             <Toast.Body className="d-flex align-items-start gap-2">

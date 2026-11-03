@@ -28,6 +28,18 @@ export function todayVN() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date());
 }
 
+// Cộng (trừ) số ngày: addDays('2026-11-03', 7) → '2026-11-10'
+export function addDays(date, days) {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+// Số ngày từ `from` đến `to`: diffDays('2026-11-03', '2026-11-10') → 7
+export function diffDays(from, to) {
+  return Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
+}
+
 // '2026-11-03' → 'Thứ Ba, 03/11/2026'
 export function formatLongDate(value) {
   const [y, m, d] = String(value).split('-').map(Number);

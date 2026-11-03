@@ -118,7 +118,7 @@ Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận 
 | Giai đoạn | Nội dung | Phụ trách |
 |---|---|---|
 | FE1 | Khung dự án, đăng nhập, menu theo vai trò, chặn route, tài khoản cá nhân | Phước (xong) |
-| FE2 | Thủ thư: lập phiếu mượn, trả sách, thu phạt, gia hạn (UC007–UC011) | Phước |
+| FE2 | Thủ thư: lập phiếu mượn, trả sách, thu phạt, gia hạn (UC007–UC011) | Phước (xong) |
 | FE3 | Admin: tài khoản, cấu hình quy định, nhật ký, áp dụng cho phiếu đang mượn, quản lý mượn trả (UC002, UC013–UC015) | Phước |
 | FE4 | Độc giả: tra cứu sách, sách đang mượn, lịch sử, tiền phạt (UC006, UC012) | |
 | FE5 | Quản lý độc giả & thẻ, đầu sách, bản sách (UC003–UC005) | |
@@ -129,7 +129,7 @@ Mọi trang đã được khai báo sẵn trong `frontend/src/routes/pages.js` (
 1. Tạo component trong `src/pages/<reader|librarian|admin>/`, ví dụ `src/pages/reader/SearchPage.jsx`. Dùng `PageHeader` cho tiêu đề, component của `react-bootstrap` cho bảng/form.
 2. Gọi API qua `src/api/`: thêm file như `src/api/books.js` với `client.get('/books', { params })`. Kết quả trả về là `{ success, data, message }`; lỗi lấy câu thông báo bằng `errorMessage(err)`.
 3. Mở `src/routes/pages.js`, import component và gán vào `component` của trang đó. Menu, đường dẫn và kiểm tra quyền tự có, không cần sửa router.
-4. Thông báo thành công/lỗi dùng `useToast()`; hỏi xác nhận dùng `ConfirmModal`; ngày và tiền dùng `formatDate`, `formatMoney`.
+4. Component có sẵn trong `src/components/`: `StatusBadge` (nhãn trạng thái theo đặc tả), `ScanInput` (ô nhập mã, Enter để gửi), `Pagination`, `ConfirmModal`, `ReceiptModal` (biên lai, in được), `Field`. Thông báo dùng `useToast()`; ngày và tiền dùng `formatDate`, `formatMoney`.
 5. Giao diện tham khảo thư mục `figma/` (không có trên git, xin file từ người phụ trách). Thông báo và nhãn trạng thái theo đặc tả N7.
 
 ## Cài đặt và sử dụng (Chương 7)
@@ -174,7 +174,7 @@ npm install
 npm run dev
 ```
 
-Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân) đã xong; các trang chưa làm hiện "Trang đang được xây dựng" kèm giai đoạn phụ trách.
+Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân) và FE2 (lập phiếu mượn, trả sách, thu phạt, gia hạn) đã xong; các trang chưa làm hiện "Trang đang được xây dựng" kèm giai đoạn phụ trách.
 
 #### Cấu hình biến môi trường (`backend/.env`)
 
@@ -360,6 +360,6 @@ Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs
 - [x] Phân tích: lớp phân tích, biểu đồ trình tự, ERD
 - [x] Thiết kế cơ sở dữ liệu (`database/schema.sql`, `database/seed.sql`)
 - [x] Backend (GĐ1 → GĐ9, đầy đủ 17 Use Case UC001–UC017)
-- [ ] Frontend (FE1 xong; FE2–FE6 đang làm)
+- [ ] Frontend (FE1, FE2 xong; FE3–FE6 đang làm)
 - [x] Kiểm thử (91 test tự động + Postman Collection + Bảng test case Chương 6)
 - [x] Hướng dẫn cài đặt và sử dụng (Chương 7)

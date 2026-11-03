@@ -96,3 +96,26 @@ Tài liệu này tổng hợp phương pháp kiểm thử, bộ ca kiểm thử 
 | 11 | `backend/tests/reminders.test.js` | UC017 (COULD) | 9 | Phân quyền, danh sách sắp đến hạn (≤ 3 ngày) & quá hạn, lọc trạng thái, chặn độc giả thiếu email (`4a`), giả lập gửi mail thành công, lỗi SMTP (`5a`) ghi `reminder_logs` & gửi lại, báo rõ khi chưa cấu hình SMTP, danh sách trống (`2a`) |
 | **Tổng** | **11 file test** | **UC001 – UC017 (TH1 – TH6)** | **91 test** | **Tất cả hoàn tất trên database kiểm thử độc lập `thuvien_thpt_test`** |
 
+
+---
+
+## 6.5. Kiểm thử giao diện Web (thủ công, trên Chrome)
+
+Thực hiện trên dữ liệu `database/seed.sql` (chạy `npm run db:reset` trước), backend `http://localhost:5000`, frontend `http://localhost:5173`. Ngày kiểm thử: **03/11/2026**.
+
+| Mã TC | Màn hình / Use Case | Thao tác | Kết quả mong đợi | Kết quả |
+|---|---|---|---|---|
+| **GUI-01** | Đăng nhập – UC001 | Bỏ trống; sai mật khẩu; đăng nhập `HS2026010` | Báo lần lượt "Cần nhập đầy đủ tên đăng nhập và mật khẩu", "Tên đăng nhập hoặc mật khẩu chưa đúng", "Tài khoản đã bị khóa, vui lòng liên hệ Admin" | **PASS** |
+| **GUI-02** | Menu theo vai trò – UC001 | Đăng nhập `HS2026001`, `TT01`, `AD001` | Độc giả chỉ thấy mục cá nhân; Thủ thư thấy nghiệp vụ mượn trả; Admin thấy mục Admin và toàn bộ mục của Thủ thư | **PASS** |
+| **GUI-03** | Phân quyền trang | Độc giả mở `/accounts`; Thủ thư mở `/regulations`; Admin mở `/borrow` | Hai trường hợp đầu hiện "Không có quyền truy cập"; Admin vào được trang của Thủ thư | **PASS** |
+| **GUI-04** | Hết phiên đăng nhập | Sửa token trong trình duyệt thành chuỗi sai rồi mở `/profile` | Về trang đăng nhập, báo phiên không hợp lệ; đăng nhập lại thì quay về `/profile` | **PASS** |
+| **GUI-05** | Tài khoản cá nhân | Đổi mật khẩu với mật khẩu hiện tại sai | Báo "Mật khẩu hiện tại chưa đúng" | **PASS** |
+| **GUI-06** | Lập phiếu mượn – UC007 | Nhập `HS2026005`, `HS2026004` | Không cho lập phiếu, hiện lý do nợ phạt 3.000đ / còn sách quá hạn | **PASS** |
+| **GUI-07** | Lập phiếu mượn – UC007 | `HS2026001` thêm `BS000001` (đang mượn), `BS999999`, `BS000005` hai lần, `BS000040`, rồi Lập phiếu | Báo đúng từng lỗi; phiếu tạm hiện hạn trả = hôm nay + 7 và snapshot quy định; lập phiếu `PM000009`, in được phiếu | **PASS** |
+| **GUI-08** | Lập phiếu mượn – UC007 8c | `HS2026001` (đã mượn 2/3) thêm 2 bản sách | Báo "Chỉ còn được mượn 1 cuốn" | **PASS** |
+| **GUI-09** | Trả sách – UC009, UC010 | Trả `BS000013` tình trạng Hư hỏng, lúc đầu không ghi chú | Hiện "Trả trễ 5 ngày… = 5.000đ"; bắt buộc ghi chú; xác nhận xong mở ngay modal thu phạt | **PASS** |
+| **GUI-10** | Thu phạt sau khi trả – UC011 | Bấm "Đã thu" ở modal thu phạt | Hiện biên lai `BL000003` 5.000đ, in được biên lai | **PASS** |
+| **GUI-11** | Trả sách – mức phạt tối đa | Trả `BS000016`, bấm "Để sau" ở modal thu phạt | Hiện "min(45 × 1.000đ, 30.000đ) = 30.000đ (đã áp mức tối đa)"; khoản phạt giữ "Chưa thu" | **PASS** |
+| **GUI-12** | Thu tiền phạt – UC011 1a | Lọc `HS2026005`, thu khoản 3.000đ, lọc "Đã thu", xem lại biên lai `BL000002` | Báo còn nợ 3.000đ → sau khi thu báo không còn nợ; biên lai hiện đúng người thu, thời điểm thu | **PASS** |
+| **GUI-13** | Gia hạn – UC008 | Tìm `HS2026008`, `HS2026004`, `HS2026003` rồi gia hạn | Lần lượt hiện "Chỉ được gia hạn 1 lần", "Sách đã quá hạn…"; `HS2026003` gia hạn +7 ngày, báo hạn mới dạng dd/mm/yyyy | **PASS** |
+| **GUI-14** | Giao diện điện thoại (390px) | Mở menu, lập phiếu trên màn hình hẹp | Menu trượt và tự đóng khi chọn mục; các thẻ xếp dọc, không tràn ngang | **PASS** |

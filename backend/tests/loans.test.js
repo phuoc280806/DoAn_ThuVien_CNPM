@@ -171,6 +171,7 @@ test('UC008: gia hạn 1 lần theo snapshot; 6a quá hạn, 6b đã gia hạn',
   assert.equal(res.body.data.oldDueDate, addDays(today, 7));
   assert.equal(res.body.data.newDueDate, addDays(today, 14));
   assert.equal(res.body.data.renewCount, 1);
+  assert.equal(res.body.message, `Gia hạn thành công, hạn trả mới là ${addDays(today, 14).split('-').reverse().join('/')}`);
 
   const again = await t.api('POST', `/loans/items/${item.borrowDetailId}/renew`, { token: librarian });
   assert.equal(again.status, 409);

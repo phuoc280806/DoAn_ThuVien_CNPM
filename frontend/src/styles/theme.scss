@@ -194,6 +194,91 @@ $modal-backdrop-opacity: 0.35;
   }
 }
 
+// Ô số tiền nổi bật (thu phạt, biên lai)
+.money-box {
+  background: var(--tv-accent-soft);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+// Thanh bước: 1 Chọn độc giả → 2 Chọn bản sách → 3 Xác nhận
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: $secondary;
+
+    b {
+      display: grid;
+      place-items: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: #edf2f7;
+      font-size: 0.75rem;
+    }
+
+    &.on {
+      color: $body-color;
+      font-weight: 600;
+
+      b {
+        background: var(--tv-accent);
+        color: #fff;
+      }
+    }
+  }
+}
+
+// ---------------------------------------------------------------------
+// In phiếu mượn / biên lai bằng window.print()
+// ---------------------------------------------------------------------
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .app-main {
+    padding-left: 0 !important;
+  }
+
+  // Đang mở modal in (biên lai): chỉ in nội dung modal đó
+  body.modal-open #root,
+  body.modal-open .modal:not(.print-modal) {
+    display: none !important;
+  }
+
+  .print-modal {
+    position: static !important;
+
+    .modal-dialog {
+      max-width: 100%;
+      margin: 0;
+    }
+
+    .modal-content {
+      border: 0;
+      box-shadow: none;
+    }
+  }
+
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  .card {
+    border: 0;
+    box-shadow: none;
+  }
+}
+
 // ---------------------------------------------------------------------
 // Trang đăng nhập
 // ---------------------------------------------------------------------

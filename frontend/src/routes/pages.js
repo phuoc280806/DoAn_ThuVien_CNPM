@@ -1,6 +1,10 @@
 import { ROLES } from '../utils/roles';
 import DashboardPage from '../pages/common/DashboardPage';
 import ProfilePage from '../pages/common/ProfilePage';
+import BorrowPage from '../pages/librarian/BorrowPage';
+import ReturnPage from '../pages/librarian/ReturnPage';
+import FinesPage from '../pages/librarian/FinesPage';
+import RenewPage from '../pages/librarian/RenewPage';
 
 /**
  * DANH SÁCH TRANG — nơi duy nhất khai báo đường dẫn, quyền và menu.
@@ -33,10 +37,10 @@ export const PAGES = [
   { path: '/my-fines', label: 'Tiền phạt', icon: 'cash-coin', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4' },
 
   // Thủ thư — nghiệp vụ mượn trả (FE2)
-  { path: '/borrow', label: 'Lập phiếu mượn', icon: 'box-arrow-right', roles: STAFF, uc: ['UC007'], phase: 'FE2' },
-  { path: '/return', label: 'Trả sách', icon: 'box-arrow-in-left', roles: STAFF, uc: ['UC009', 'UC010'], phase: 'FE2' },
-  { path: '/fines', label: 'Thu tiền phạt', icon: 'cash-coin', roles: STAFF, uc: ['UC011'], phase: 'FE2' },
-  { path: '/renew', label: 'Gia hạn', icon: 'arrow-repeat', roles: STAFF, uc: ['UC008'], phase: 'FE2' },
+  { path: '/borrow', label: 'Lập phiếu mượn', icon: 'box-arrow-right', roles: STAFF, uc: ['UC007'], phase: 'FE2', component: BorrowPage },
+  { path: '/return', label: 'Trả sách', icon: 'box-arrow-in-left', roles: STAFF, uc: ['UC009', 'UC010'], phase: 'FE2', component: ReturnPage },
+  { path: '/fines', label: 'Thu tiền phạt', icon: 'cash-coin', roles: STAFF, uc: ['UC011'], phase: 'FE2', component: FinesPage },
+  { path: '/renew', label: 'Gia hạn', icon: 'arrow-repeat', roles: STAFF, uc: ['UC008'], phase: 'FE2', component: RenewPage },
 
   // Thủ thư — độc giả & sách (FE5)
   { path: '/readers', label: 'Độc giả & thẻ', icon: 'people', roles: STAFF, uc: ['UC003'], phase: 'FE5' },

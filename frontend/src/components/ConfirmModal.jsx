@@ -7,6 +7,8 @@ import { Button, Modal, Spinner } from 'react-bootstrap';
  *                 onConfirm={doLogout} onCancel={() => setOpen(false)}>
  *     Bạn có chắc muốn đăng xuất?
  *   </ConfirmModal>
+ *
+ * onExited: gọi khi modal đã đóng hẳn — mở modal kế tiếp ở đây để hai modal không chồng lên nhau.
  */
 export default function ConfirmModal({
   show,
@@ -18,9 +20,10 @@ export default function ConfirmModal({
   busy = false,
   onConfirm,
   onCancel,
+  onExited,
 }) {
   return (
-    <Modal show={show} onHide={busy ? undefined : onCancel} centered>
+    <Modal show={show} onHide={busy ? undefined : onCancel} onExited={onExited} centered>
       <Modal.Header closeButton={!busy}>
         <Modal.Title as="h2" className="h5">{title}</Modal.Title>
       </Modal.Header>

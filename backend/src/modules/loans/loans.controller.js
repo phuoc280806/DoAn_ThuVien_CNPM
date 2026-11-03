@@ -1,6 +1,7 @@
 const { matchedData } = require('express-validator');
 const service = require('./loans.service');
 const { ok, created } = require('../../utils/response');
+const { formatDateVN } = require('../../utils/format');
 
 async function eligibility(req, res) {
   ok(res, await service.eligibility(matchedData(req).readerCode));
@@ -21,7 +22,7 @@ async function listActive(req, res) {
 
 async function renew(req, res) {
   const result = await service.renew(matchedData(req).id, { userId: req.user.userId });
-  ok(res, result, `Gia hạn thành công, hạn trả mới là ${result.newDueDate}`);
+  ok(res, result, `Gia hạn thành công, hạn trả mới là ${formatDateVN(result.newDueDate)}`);
 }
 
 module.exports = { eligibility, create, getById, listActive, renew };

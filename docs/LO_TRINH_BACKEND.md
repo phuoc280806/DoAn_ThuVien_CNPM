@@ -105,7 +105,7 @@ Quy ước khi viết backend:
 - **Mã hiển thị** sinh từ id, không lưu cột riêng: phiếu `PM` + id, biên lai `BL` + fine_id (ví dụ `PM000009`, `BL000002`). Riêng bản sách có cột `copy_code` (`BS000001`) vì được dán lên sách và quét.
 - **Tiền** lưu kiểu `INT` (đồng), không dùng `DECIMAL`.
 
-Dữ liệu mẫu (`seed.sql`): 3 tài khoản nhân viên, 14 độc giả (1 người chưa có tài khoản), 13 đầu sách × 3 bản, 4 quy định (cũ và hiện hành cho HS/GV), 8 phiếu mượn phủ TH1–TH6. Ngày tính lùi từ `CURDATE()`.
+Dữ liệu mẫu (`seed.sql`): 3 tài khoản nhân viên, 14 độc giả (1 người chưa có tài khoản), 30 đầu sách × 3 bản, 4 quy định (cũ và hiện hành cho HS/GV), 8 phiếu mượn phủ TH1–TH6. Ngày tính lùi từ `CURDATE()`.
 
 `test_borrow_return.sql`: diễn tập bằng SQL toàn bộ luồng lập phiếu → gia hạn → trả trễ → thu phạt → đổi quy định giữa chừng, kèm truy vấn báo cáo. Mỗi khối là việc một API sẽ làm.
 

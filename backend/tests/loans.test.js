@@ -91,6 +91,21 @@ test('TH2, TH5, 5a: độc giả bị chặn thì không tạo phiếu', async (
   assert.equal(await copyStatus('BS000006'), 'AVAILABLE');
 });
 
+test('Mượn đúng bằng giới hạn thì được; mượn thêm 1 cuốn thì bị chặn', async () => {
+  // GV2026001 đang giữ 2/5 cuốn → mượn thêm 3 cuốn là vừa đủ 5/5
+  const atLimit = await borrow('GV2026001', ['BS000040', 'BS000043', 'BS000046']);
+  assert.equal(atLimit.status, 201);
+  assert.equal(atLimit.body.data.items.length, 3);
+
+  const full = await eligibility('GV2026001');
+  assert.deepEqual(full.body.data.problems.map((p) => p.code), ['LIMIT_REACHED']);
+
+  const over = await borrow('GV2026001', ['BS000049']);
+  assert.equal(over.status, 409);
+  assert.equal(over.body.message, 'Đã mượn 5/5 cuốn');
+  assert.equal(await copyStatus('BS000049'), 'AVAILABLE');
+});
+
 test('UC007 8a, 8b, 8c, 9b: lỗi khi chọn bản sách, không ghi dữ liệu nào', async () => {
   const before = await countTickets();
 

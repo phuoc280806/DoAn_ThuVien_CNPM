@@ -144,7 +144,7 @@ npm run db:reset
 # 3. Chạy server Backend (http://localhost:5000)
 npm run dev               # kiểm tra nhanh: mở http://localhost:5000/api/health
 
-# 4. Chạy toàn bộ 88 ca kiểm thử tự động (dùng DB riêng thuvien_thpt_test, không ảnh hưởng dữ liệu chính)
+# 4. Chạy toàn bộ 90 ca kiểm thử tự động (dùng DB riêng thuvien_thpt_test, không ảnh hưởng dữ liệu chính)
 npm test
 
 # 5. Chạy Frontend (http://localhost:5173) – đang làm, chưa chạy được
@@ -338,5 +338,5 @@ Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs
 - [x] Thiết kế cơ sở dữ liệu (`database/schema.sql`, `database/seed.sql`)
 - [x] Backend (GĐ1 → GĐ9, đầy đủ 17 Use Case UC001–UC017)
 - [ ] Frontend
-- [x] Kiểm thử (88 test tự động + Postman Collection + Bảng test case Chương 6)
+- [x] Kiểm thử (90 test tự động + Postman Collection + Bảng test case Chương 6)
 - [x] Hướng dẫn cài đặt và sử dụng (Chương 7)

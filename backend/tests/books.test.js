@@ -50,7 +50,8 @@ test('UC006: tra cứu không dấu, kèm số bản khả dụng', async () => 
   assert.deepEqual(byIsbn.body.data.items.map((b) => b.title), ['Truyện Kiều']);
 
   const byCategory = await t.api('GET', '/books?categoryId=3', { token: reader });
-  assert.deepEqual(byCategory.body.data.items.map((b) => b.title).sort(), ['Lược sử thời gian', 'Vật lý vui']);
+  assert.deepEqual(byCategory.body.data.items.map((b) => b.title).sort(),
+    ['Lược sử thời gian', 'Nguồn gốc các loài', 'Vũ trụ trong vỏ hạt dẻ', 'Vật lý vui']);
 });
 
 test('UC006 8a: đầu sách không còn bản khả dụng trả về 0', async () => {
@@ -83,7 +84,7 @@ test('UC004: thêm đầu sách kèm 3 bản; 7a dữ liệu sai; 8a trùng ISBN
   assert.equal(res.body.data.availableCopies, 3);
 
   const copies = await t.api('GET', `/books/${res.body.data.bookId}/copies`, { token: librarian });
-  assert.deepEqual(copies.body.data.copies.map((c) => c.copyCode), ['BS000040', 'BS000041', 'BS000042']);
+  assert.deepEqual(copies.body.data.copies.map((c) => c.copyCode), ['BS000091', 'BS000092', 'BS000093']);
   assert.equal(copies.body.data.copies[0].location, 'Kệ A2');
 
   const duplicate = await t.api('POST', '/books', { token: librarian, body: newBook });
@@ -117,7 +118,7 @@ test('Nhập thêm bản sách cho đầu sách đã có', async () => {
   const res = await t.api('POST', '/books/5/copies', { token: librarian, body: { quantity: 2, location: 'Kệ B2' } });
   assert.equal(res.status, 201);
   assert.equal(res.body.data.book.totalCopies, 5);
-  assert.deepEqual(res.body.data.copies.slice(-2).map((c) => c.copyCode), ['BS000043', 'BS000044']);
+  assert.deepEqual(res.body.data.copies.slice(-2).map((c) => c.copyCode), ['BS000094', 'BS000095']);
 
   assert.equal((await t.api('POST', '/books/5/copies', { token: librarian, body: { quantity: 0 } })).status, 400);
 });

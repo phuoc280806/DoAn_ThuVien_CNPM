@@ -129,10 +129,28 @@ INSERT INTO books (book_id, isbn, title, author, publisher, publish_year, catego
   -- Đầu sách đã ẩn: độc giả tra cứu không thấy (UC004)
   (12, '9786043006360', 'Vật lí 11 (chương trình cũ)', 'Bộ GD&ĐT',      'NXB Giáo dục Việt Nam', 2007, 1, 'Sách giáo khoa chương trình cũ', TRUE),
   -- Không còn bản nào khả dụng (UC006 8a)
-  (13, '9786043006896', 'Không gia đình',            'Hector Malot',    'NXB Văn học',           2019, 2, 'Tiểu thuyết', FALSE);
+  (13, '9786043006896', 'Không gia đình',            'Hector Malot',    'NXB Văn học',           2019, 2, 'Tiểu thuyết', FALSE),
+  -- Bổ sung cho đủ tiêu chí nghiệm thu: tối thiểu 30 đầu sách / 60 bản sách
+  (14, '9786043010374', 'Hóa học 10',                'Bộ GD&ĐT',        'NXB Giáo dục Việt Nam', 2023, 1, 'Sách giáo khoa Hóa học lớp 10', FALSE),
+  (15, '9786043010749', 'Lịch sử 11',                'Bộ GD&ĐT',        'NXB Giáo dục Việt Nam', 2023, 1, 'Sách giáo khoa Lịch sử lớp 11', FALSE),
+  (16, '9786043011111', 'Sinh học 12',               'Bộ GD&ĐT',        'NXB Giáo dục Việt Nam', 2024, 1, 'Sách giáo khoa Sinh học lớp 12', FALSE),
+  (17, '9786043011487', 'Địa lí 12',                 'Bộ GD&ĐT',        'NXB Giáo dục Việt Nam', 2024, 1, 'Sách giáo khoa Địa lí lớp 12', FALSE),
+  (18, '9786043011852', 'Tắt đèn',                   'Ngô Tất Tố',      'NXB Văn học',           2020, 2, 'Tiểu thuyết hiện thực phê phán', FALSE),
+  (19, '9786043012224', 'Chí Phèo',                  'Nam Cao',         'NXB Văn học',           2021, 2, 'Tuyển tập truyện ngắn', FALSE),
+  (20, '9786043012590', 'Cho tôi xin một vé đi tuổi thơ', 'Nguyễn Nhật Ánh', 'NXB Trẻ',          2022, 2, 'Truyện dài về tuổi thơ', FALSE),
+  (21, '9786043012965', 'Nhật ký Đặng Thùy Trâm',    'Đặng Thùy Trâm',  'NXB Hội Nhà văn',       2020, 2, 'Nhật ký thời chiến', FALSE),
+  (22, '9786043013337', 'Nhà giả kim',               'Paulo Coelho',    'NXB Hội Nhà văn',       2021, 2, 'Tiểu thuyết', FALSE),
+  (23, '9786043013702', 'Vũ trụ trong vỏ hạt dẻ',    'Stephen Hawking', 'NXB Trẻ',               2019, 3, 'Phổ biến khoa học về không – thời gian', FALSE),
+  (24, '9786043014075', 'Nguồn gốc các loài',        'Charles Darwin',  'NXB Tri thức',          2018, 3, 'Thuyết tiến hóa qua chọn lọc tự nhiên', FALSE),
+  (25, '9786043014440', 'Ôn thi THPT Quốc gia Ngữ văn',   'Nhiều tác giả', 'NXB ĐHQG Hà Nội',    2024, 4, 'Bộ đề luyện thi', FALSE),
+  (26, '9786043014815', 'Ôn thi THPT Quốc gia Tiếng Anh', 'Nhiều tác giả', 'NXB ĐHQG Hà Nội',    2024, 4, 'Bộ đề luyện thi', FALSE),
+  (27, '9786043015188', 'Tuổi trẻ đáng giá bao nhiêu', 'Rosie Nguyễn',  'NXB Hội Nhà văn',       2020, 5, 'Sách phát triển bản thân', FALSE),
+  (28, '9786043015553', '7 thói quen của bạn trẻ thành đạt', 'Sean Covey', 'NXB Tổng hợp TP.HCM', 2021, 5, 'Kỹ năng sống cho tuổi teen', FALSE),
+  (29, '9786043015928', 'Oxford Word Skills',        'Ruth Gairns',     'Oxford University Press', 2020, 6, 'Từ vựng tiếng Anh theo chủ đề', FALSE),
+  (30, '9786043016291', 'Tiếng Nhật cho mọi người – Sơ cấp 1', '3A Corporation', 'NXB Trẻ',     2022, 6, 'Giáo trình tiếng Nhật sơ cấp', FALSE);
 
 -- ---------------------------------------------------------------------
--- 7. BOOK_COPIES — mỗi đầu sách 3 bản, mã BS000001 … BS000039
+-- 7. BOOK_COPIES — mỗi đầu sách 3 bản, mã BS000001 … BS000090
 --    Đầu sách b có các bản copy_id = 3b-2, 3b-1, 3b. Kệ theo thể loại: A = SGK, B = Văn học, ...
 -- ---------------------------------------------------------------------
 INSERT INTO book_copies (copy_id, book_id, copy_code, location)

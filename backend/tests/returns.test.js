@@ -2,6 +2,7 @@ const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { startApp } = require('./helpers');
 const { calculateFine } = require('../src/utils/fine');
+const { todayVN, addDays } = require('../src/utils/date');
 
 let t;
 let librarian;
@@ -142,4 +143,20 @@ test('Biên lai: Thủ thư và chủ khoản phạt xem được; người khá
   assert.equal(n, 1);
 
   assert.equal((await t.api('GET', '/fines/1/receipt', { token: librarian })).status, 409);   // chưa thu
+});
+
+test('Trả trễ đúng 1 ngày — phạt 1.000đ', async () => {
+  const loan = await t.api('POST', '/loans', { token: librarian, body: { readerCode: 'GV2026003', copyCodes: ['BS000040'] } });
+  assert.equal(loan.status, 201);
+  // Giả lập phiếu đã quá hạn từ hôm qua
+  await t.pool.query('UPDATE borrow_details SET due_date = ? WHERE borrow_detail_id = ?',
+    [addDays(todayVN(), -1), loan.body.data.items[0].borrowDetailId]);
+
+  const preview = await lookup('BS000040');
+  assert.equal(preview.body.data.lateDays, 1);
+  assert.equal(preview.body.data.fineAmount, 1000);
+
+  const res = await giveBack('BS000040');
+  assert.equal(res.body.data.fine.amount, 1000);
+  assert.equal(res.body.message, 'Trả sách thành công. Trễ 1 ngày, tiền phạt 1.000đ');
 });

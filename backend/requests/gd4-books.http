@@ -75,7 +75,7 @@ Content-Type: application/json
 GET {{baseUrl}}/books?keyword=vat li
 Authorization: Bearer {{librarian}}
 
-### 12. Thêm đầu sách kèm 3 bản → 201, mã bản sách tự sinh BS000040–BS000042
+### 12. Thêm đầu sách kèm 3 bản → 201, mã bản sách tự sinh BS000091–BS000093
 # @name newBook
 POST {{baseUrl}}/books
 Authorization: Bearer {{librarian}}

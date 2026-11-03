@@ -1,29 +1,5 @@
-# Dependencies
-node_modules/
-
-# Environment
+node_modules
+dist
 .env
-.env.local
-.env.*.local
-
-# Build output
-dist/
-build/
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-
-# Editor / OS
-.vscode/*
-!.vscode/extensions.json
-.idea/
 .DS_Store
-Thumbs.db
-
-# Claude Code (cấu hình cá nhân)
-.claude/
-
-# File thiết kế Figma (không đưa lên git)
-/figma/
+*.local

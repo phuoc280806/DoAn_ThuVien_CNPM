@@ -6,7 +6,8 @@ const { ok, created } = require('../../utils/response');
 const actorOf = (req) => ({ userId: req.user.userId, ip: req.ip });
 
 async function list(req, res) {
-  ok(res, await service.list(matchedData(req, { locations: ['query'] })));
+  const data = await service.list(matchedData(req, { locations: ['query'] }));
+  ok(res, data, data.items.length === 0 ? 'Không tìm thấy tài khoản' : undefined);
 }
 
 async function getById(req, res) {

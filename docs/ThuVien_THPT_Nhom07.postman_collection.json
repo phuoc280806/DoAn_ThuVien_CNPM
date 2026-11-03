@@ -1,0 +1,985 @@
+{
+  "info": {
+    "_postman_id": "7b9a0700-2611-4044-a007-thuvienthpt07",
+    "name": "Hệ thống Quản lý Thư viện Trường THPT - Nhóm 07",
+    "description": "Bộ sưu tập API đầy đủ cho 17 Use Case (UC001–UC017) và 6 tình huống kiểm thử (TH1–TH6) của Hệ thống Quản lý Thư viện Trường THPT - Nhóm 07 (2611COMP104406).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "00. Health Check",
+      "item": [
+        {
+          "name": "Kiểm tra kết nối Server & MySQL",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "01. Xác thực (UC001)",
+      "item": [
+        {
+          "name": "Đăng nhập Admin (AD001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"AD001\",\n  \"password\": \"Thuvien@2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập Thủ thư (TT01)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"TT01\",\n  \"password\": \"Thuvien@2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Đăng nhập Học sinh (HS2026001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('token', json.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"HS2026001\",\n  \"password\": \"Thuvien@2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Thông tin người đang đăng nhập (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Đăng xuất (/auth/logout)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Quản lý tài khoản & phân quyền (UC002)",
+      "item": [
+        {
+          "name": "Danh sách và tìm kiếm tài khoản",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?keyword=&role=&status=&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "keyword", "value": "" },
+                { "key": "role", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Xem chi tiết tài khoản",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Cấp tài khoản cho độc giả HS2026011",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"HS2026011\",\n  \"password\": \"Thuvien@2026\",\n  \"role\": \"READER\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Khóa / mở khóa tài khoản",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"LOCKED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/3/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "3", "status"]
+            }
+          }
+        },
+        {
+          "name": "Đặt lại mật khẩu",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"Thuvien@2026\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/3/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "3", "password"]
+            }
+          }
+        },
+        {
+          "name": "Đổi vai trò (Thủ thư <-> Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/3/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "3", "role"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Quản lý độc giả & thẻ thư viện (UC003)",
+      "item": [
+        {
+          "name": "Danh sách & tìm kiếm độc giả",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/readers?keyword=&readerType=&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers"],
+              "query": [
+                { "key": "keyword", "value": "" },
+                { "key": "readerType", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Chi tiết hồ sơ độc giả",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/readers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Thêm hồ sơ độc giả mới",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readerCode\": \"HS2026012\",\n  \"fullName\": \"Trương Bảo Ngọc\",\n  \"readerType\": \"STUDENT\",\n  \"className\": \"11A3\",\n  \"email\": \"ngoc.truong@student.thptmau.edu.vn\",\n  \"dateOfBirth\": \"2009-04-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/readers",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers"]
+            }
+          }
+        },
+        {
+          "name": "Sửa hồ sơ độc giả",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Lê Minh An\",\n  \"readerType\": \"STUDENT\",\n  \"className\": \"10A1\",\n  \"email\": \"an.le@student.thptmau.edu.vn\",\n  \"dateOfBirth\": \"2010-03-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/readers/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers", "1"]
+            }
+          }
+        },
+        {
+          "name": "Cấp thẻ thư viện",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expiryDate\": \"2027-05-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/readers/15/card",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers", "15", "card"]
+            }
+          }
+        },
+        {
+          "name": "Gia hạn thẻ thư viện",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expiryDate\": \"2027-05-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/readers/7/card/expiry",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers", "7", "card", "expiry"]
+            }
+          }
+        },
+        {
+          "name": "Khóa / mở khóa thẻ thư viện",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/readers/9/card/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["readers", "9", "card", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Quản lý đầu sách, bản sách & tra cứu (UC004–UC006)",
+      "item": [
+        {
+          "name": "Danh sách thể loại sách",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Tra cứu sách & xem số bản khả dụng (UC006)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books?keyword=&categoryId=&page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"],
+              "query": [
+                { "key": "keyword", "value": "" },
+                { "key": "categoryId", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Chi tiết đầu sách",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "1"]
+            }
+          }
+        },
+        {
+          "name": "Thêm đầu sách kèm nhập bản sách (UC004)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"978-604-300-742-8\",\n  \"title\": \"Hóa học 12\",\n  \"author\": \"Bộ GD&ĐT\",\n  \"publisher\": \"NXB Giáo dục Việt Nam\",\n  \"publishYear\": 2024,\n  \"categoryId\": 1,\n  \"description\": \"Sách giáo khoa Hóa học lớp 12\",\n  \"copies\": 3,\n  \"location\": \"Kệ A2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books",
+              "host": ["{{baseUrl}}"],
+              "path": ["books"]
+            }
+          }
+        },
+        {
+          "name": "Sửa đầu sách (UC004)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isbn\": \"9786043000535\",\n  \"title\": \"Ngữ văn 10 - Tập 1\",\n  \"author\": \"Bộ GD&ĐT\",\n  \"publisher\": \"NXB Giáo dục Việt Nam\",\n  \"publishYear\": 2024,\n  \"categoryId\": 1,\n  \"description\": \"SGK Ngữ văn 10\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "1"]
+            }
+          }
+        },
+        {
+          "name": "Xóa hoặc ẩn đầu sách (UC004)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/10",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "10"]
+            }
+          }
+        },
+        {
+          "name": "Danh sách bản sách của một đầu sách (UC005)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/books/1/copies",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "1", "copies"]
+            }
+          }
+        },
+        {
+          "name": "Nhập thêm bản sách cho đầu sách",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 2,\n  \"location\": \"Kệ B2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/books/1/copies",
+              "host": ["{{baseUrl}}"],
+              "path": ["books", "1", "copies"]
+            }
+          }
+        },
+        {
+          "name": "Tra bản sách theo mã quét (BS000005)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/copies/code/BS000005",
+              "host": ["{{baseUrl}}"],
+              "path": ["copies", "code", "BS000005"]
+            }
+          }
+        },
+        {
+          "name": "Cập nhật trạng thái bản sách (UC005)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"DAMAGED\",\n  \"reason\": \"Bìa sách bị rách\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/copies/5/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["copies", "5", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Quy định & Nhật ký & Áp dụng (UC013–UC015)",
+      "item": [
+        {
+          "name": "Xem tổng quan quy định theo vai trò (UC013)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/regulations",
+              "host": ["{{baseUrl}}"],
+              "path": ["regulations"]
+            }
+          }
+        },
+        {
+          "name": "Xem quy định đang hiệu lực theo loại độc giả",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/regulations/current?readerType=STUDENT",
+              "host": ["{{baseUrl}}"],
+              "path": ["regulations", "current"],
+              "query": [{ "key": "readerType", "value": "STUDENT" }]
+            }
+          }
+        },
+        {
+          "name": "Tạo phiên bản quy định mới (UC013)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readerType\": \"STUDENT\",\n  \"maxBooks\": 3,\n  \"borrowDays\": 7,\n  \"finePerDay\": 2000,\n  \"maxFinePerBook\": 30000,\n  \"renewDays\": 7,\n  \"effectiveFrom\": \"2026-12-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/regulations",
+              "host": ["{{baseUrl}}"],
+              "path": ["regulations"]
+            }
+          }
+        },
+        {
+          "name": "Xem nhật ký thay đổi quy định (UC014)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/regulations/logs?page=1&pageSize=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["regulations", "logs"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Xem trước áp dụng quy định cho phiếu đang mượn (UC015 Preview)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readerType\": \"STUDENT\",\n  \"params\": [\"borrowDays\", \"finePerDay\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/regulations/apply-active-loans/preview",
+              "host": ["{{baseUrl}}"],
+              "path": ["regulations", "apply-active-loans", "preview"]
+            }
+          }
+        },
+        {
+          "name": "Áp dụng quy định mới cho phiếu đang mượn (UC015 Apply - TH6)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readerType\": \"STUDENT\",\n  \"params\": [\"borrowDays\", \"finePerDay\"],\n  \"reason\": \"Đồng bộ quy định học kỳ 2\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/regulations/apply-active-loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["regulations", "apply-active-loans"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Mượn sách & Gia hạn (UC007–UC008 | TH1, TH2, TH5)",
+      "item": [
+        {
+          "name": "Kiểm tra điều kiện mượn - HS2026001 đủ điều kiện (TH1)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/loans/eligibility/HS2026001",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans", "eligibility", "HS2026001"]
+            }
+          }
+        },
+        {
+          "name": "Kiểm tra điều kiện mượn - HS2026002 đã mượn 3/3 cuốn (TH2)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/loans/eligibility/HS2026002",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans", "eligibility", "HS2026002"]
+            }
+          }
+        },
+        {
+          "name": "Kiểm tra điều kiện mượn - HS2026005 còn nợ phạt 3.000đ (TH5)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/loans/eligibility/HS2026005",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans", "eligibility", "HS2026005"]
+            }
+          }
+        },
+        {
+          "name": "Lập phiếu mượn 2 cuốn cho HS2026001 (UC007 - TH1)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"readerCode\": \"HS2026001\",\n  \"copyCodes\": [\"BS000005\", \"BS000014\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans"]
+            }
+          }
+        },
+        {
+          "name": "Xem / in phiếu mượn theo ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/loans/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans", "1"]
+            }
+          }
+        },
+        {
+          "name": "Tra sách đang mượn để gia hạn (UC008)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/loans/active?readerCode=HS2026003",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans", "active"],
+              "query": [{ "key": "readerCode", "value": "HS2026003" }]
+            }
+          }
+        },
+        {
+          "name": "Gia hạn 1 cuốn đang mượn (UC008)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/loans/items/4/renew",
+              "host": ["{{baseUrl}}"],
+              "path": ["loans", "items", "4", "renew"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Trả sách & Tiền phạt (UC009–UC011 | TH3, TH4)",
+      "item": [
+        {
+          "name": "Quét mã bản sách xem trước khi trả - Trả đúng hạn (BS000010 - TH3)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/returns/lookup/BS000010",
+              "host": ["{{baseUrl}}"],
+              "path": ["returns", "lookup", "BS000010"]
+            }
+          }
+        },
+        {
+          "name": "Xác nhận trả sách đúng hạn (UC009 - TH3)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"copyCode\": \"BS000010\",\n  \"condition\": \"GOOD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/returns",
+              "host": ["{{baseUrl}}"],
+              "path": ["returns"]
+            }
+          }
+        },
+        {
+          "name": "Quét mã bản sách xem trước khi trả - Trễ 5 ngày, phạt 5.000đ (BS000013 - TH4)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/returns/lookup/BS000013",
+              "host": ["{{baseUrl}}"],
+              "path": ["returns", "lookup", "BS000013"]
+            }
+          }
+        },
+        {
+          "name": "Xác nhận trả sách trễ 5 ngày -> sinh khoản phạt 5.000đ (UC009, UC010 - TH4)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"copyCode\": \"BS000013\",\n  \"condition\": \"GOOD\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/returns",
+              "host": ["{{baseUrl}}"],
+              "path": ["returns"]
+            }
+          }
+        },
+        {
+          "name": "Danh sách khoản phạt (UC011)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fines?readerCode=HS2026005&status=UNPAID",
+              "host": ["{{baseUrl}}"],
+              "path": ["fines"],
+              "query": [
+                { "key": "readerCode", "value": "HS2026005" },
+                { "key": "status", "value": "UNPAID" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Thu tiền phạt & tạo biên lai điện tử (UC011)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fines/1/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["fines", "1", "pay"]
+            }
+          }
+        },
+        {
+          "name": "Xem / in lại biên lai thu phạt (UC011)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/fines/2/receipt",
+              "host": ["{{baseUrl}}"],
+              "path": ["fines", "2", "receipt"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Cổng Độc giả - Lịch sử mượn/trả & khoản phạt (UC012)",
+      "item": [
+        {
+          "name": "Xem lịch sử mượn/trả & khoản phạt của chính mình",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["me", "loans"]
+            }
+          }
+        },
+        {
+          "name": "Xem chi tiết một phiếu mượn của chính mình",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/me/loans/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["me", "loans", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Báo cáo thống kê & Xuất Excel/PDF (UC016)",
+      "item": [
+        {
+          "name": "Báo cáo (1) Thống kê mượn/trả",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/loans?from=2026-09-01&to=2026-11-03",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "loans"],
+              "query": [
+                { "key": "from", "value": "2026-09-01" },
+                { "key": "to", "value": "2026-11-03" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Báo cáo (2) Sách trả trễ và đang quá hạn",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/overdue?from=2026-09-01&to=2026-11-03",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "overdue"],
+              "query": [
+                { "key": "from", "value": "2026-09-01" },
+                { "key": "to", "value": "2026-11-03" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Báo cáo (3) Tiền phạt đã thu / chưa thu & độc giả còn nợ",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/fines?from=2026-09-01&to=2026-11-03",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "fines"],
+              "query": [
+                { "key": "from", "value": "2026-09-01" },
+                { "key": "to", "value": "2026-11-03" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Xuất báo cáo ra Excel (.xlsx)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/loans/export?from=2026-09-01&to=2026-11-03&format=xlsx",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "loans", "export"],
+              "query": [
+                { "key": "from", "value": "2026-09-01" },
+                { "key": "to", "value": "2026-11-03" },
+                { "key": "format", "value": "xlsx" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Xuất báo cáo ra PDF (.pdf) có tiếng Việt",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reports/overdue/export?from=2026-09-01&to=2026-11-03&format=pdf",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "overdue", "export"],
+              "query": [
+                { "key": "from", "value": "2026-09-01" },
+                { "key": "to", "value": "2026-11-03" },
+                { "key": "format", "value": "pdf" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Nhắc hạn trả qua email (UC017 - COULD)",
+      "item": [
+        {
+          "name": "Danh sách phiếu sắp đến hạn (<= 3 ngày) và quá hạn",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reminders",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders"]
+            }
+          }
+        },
+        {
+          "name": "Gửi email nhắc hạn cho các mục đã chọn",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"borrowDetailIds\": [4, 5]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reminders/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "send"]
+            }
+          }
+        },
+        {
+          "name": "Xem lịch sử gửi email nhắc hạn (reminder_logs)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reminders/logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["reminders", "logs"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

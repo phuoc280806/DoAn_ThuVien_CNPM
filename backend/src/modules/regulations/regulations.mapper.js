@@ -1,10 +1,20 @@
+const { ticketCode } = require('../../utils/format');
+
 // Tham số quy định: tên trong API (camelCase) ↔ tên cột / khóa JSON trong database (snake_case)
 const PARAMS = {
-  maxBooks: 'max_books',             // QĐ01
-  borrowDays: 'borrow_days',         // QĐ02
-  finePerDay: 'fine_per_day',        // QĐ03
+  maxBooks: 'max_books',               // QĐ01
+  borrowDays: 'borrow_days',           // QĐ02
+  finePerDay: 'fine_per_day',          // QĐ03
   maxFinePerBook: 'max_fine_per_book', // QĐ06
-  renewDays: 'renew_days',           // QĐ04
+  renewDays: 'renew_days',             // QĐ04
+};
+
+// Tham số lưu trong snapshot của phiếu mượn (UC007, UC015)
+const SNAPSHOT_PARAMS = {
+  borrowDays: { regColumn: 'borrow_days', snapColumn: 'snap_borrow_days' },
+  finePerDay: { regColumn: 'fine_per_day', snapColumn: 'snap_fine_per_day' },
+  maxFinePerBook: { regColumn: 'max_fine_per_book', snapColumn: 'snap_max_fine_per_book' },
+  renewDays: { regColumn: 'renew_days', snapColumn: 'snap_renew_days' },
 };
 
 const toCamel = (key) => key.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
@@ -46,4 +56,25 @@ function toLogDto(row) {
   };
 }
 
-module.exports = { PARAMS, toRegulationDto, toLogDto };
+// UC015 bước 6 – Phiếu đang mượn bị ảnh hưởng: giá trị cũ → mới và cảnh báo chuyển sang quá hạn
+function toAffectedTicketDto(ticket, { oldValues, newValues, wasOverdue, isOverdue, willBecomeOverdue }) {
+  return {
+    borrowId: ticket.borrow_id,
+    ticketCode: ticketCode(ticket.borrow_id),
+    borrowDate: ticket.borrow_date,
+    reader: {
+      readerId: ticket.reader_id,
+      readerCode: ticket.reader_code,
+      fullName: ticket.reader_name,
+      readerType: ticket.reader_type,
+    },
+    oldValues: camelKeys(oldValues),
+    newValues: camelKeys(newValues),
+    wasOverdue,
+    isOverdue,
+    willBecomeOverdue,
+    warning: willBecomeOverdue ? 'Phiếu sẽ chuyển sang quá hạn' : null,
+  };
+}
+
+module.exports = { PARAMS, SNAPSHOT_PARAMS, camelKeys, toRegulationDto, toLogDto, toAffectedTicketDto };

@@ -7,7 +7,8 @@ async function listCategories(req, res) {
 }
 
 async function list(req, res) {
-  ok(res, await service.list(matchedData(req, { locations: ['query'] }), req.user));
+  const data = await service.list(matchedData(req, { locations: ['query'] }), req.user);
+  ok(res, data, data.items.length === 0 ? 'Không tìm thấy đầu sách phù hợp với thông tin tìm kiếm' : undefined);
 }
 
 async function getById(req, res) {

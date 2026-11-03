@@ -306,10 +306,14 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 | GET | `/api/reports/fines?from=&to=` | Thủ thư | Tiền phạt đã thu / chưa thu, độc giả còn nợ |
 | GET | `/api/reports/:type/export?format=xlsx\|pdf` | Thủ thư | Xuất file |
 
-- [ ] UC015 chạy trong transaction, lỗi thì hoàn tác toàn bộ; lưu giá trị cũ vào `regulation_logs`
-- [ ] Báo cáo kiểm tra khoảng thời gian hợp lệ, "Đến ngày" không ở tương lai
+- [x] UC015 chạy trong transaction, lỗi thì hoàn tác toàn bộ; lưu giá trị cũ vào `regulation_logs` và `ticket_snapshot_changes`
+- [x] Báo cáo kiểm tra khoảng thời gian hợp lệ, "Đến ngày" không ở tương lai (6a); không có dữ liệu thì báo rõ (8a)
+- [x] Xuất báo cáo ra Excel (`exceljs`) và PDF (`pdfkit` kèm font tiếng Việt `assets/fonts/Roboto-Regular.ttf`)
+- [x] Test: `tests/apply-regulation.test.js` (6 test), `tests/reports.test.js` (7 test); thử tay: `requests/gd8-reports.http`
 
 **Xong khi:** chạy đúng TH6 (đổi quy định giữa chừng: phiếu cũ giữ snapshot, chỉ đổi khi Admin chủ động áp dụng); xuất được file Excel và PDF.
+
+**Trạng thái:** xong.
 
 ---
 
@@ -321,17 +325,24 @@ Module `books` (bảng `books`, thay cho tên `titles` dự kiến ban đầu) v
 |---|---|---|---|
 | GET | `/api/reminders` | Thủ thư | Phiếu còn ≤ 3 ngày đến hạn và phiếu quá hạn |
 | POST | `/api/reminders/send` | Thủ thư | Gửi email nhắc cho các phiếu đã chọn |
+| GET | `/api/reminders/logs` | Thủ thư | Lịch sử gửi email nhắc hạn (`reminder_logs`) |
 
-- [ ] Cấu hình SMTP trong `.env` (ví dụ Gmail App Password); ghi `reminder_logs` cả khi gửi thất bại
+- [x] Cấu hình SMTP trong `.env.example` (ví dụ Gmail App Password); ghi `reminder_logs` cả khi gửi thành công và khi gửi thất bại
+- [x] Xử lý đầy đủ các luồng thay thế: `2a` (danh sách trống: `"Không có phiếu cần nhắc"`), `4a` (thiếu email: `"Độc giả chưa có email, hãy nhắc trực tiếp"`), `5a` (lỗi gửi email: ghi `reminder_logs` với `success = false`, báo lỗi và cho phép gửi lại)
+- [x] Test: `tests/reminders.test.js` (8 test, giả lập việc gửi mail); thử tay: `requests/gd9-reminders.http`
+
+**Trạng thái:** xong.
 
 ---
 
 ## GĐ10. Kiểm thử và hoàn thiện
 
-- [ ] Bộ request Postman cho mọi endpoint, lưu trong `docs/` để cả nhóm import
-- [ ] Bảng test case theo 6 tình huống TH1–TH6 và các luồng thay thế quan trọng (dùng cho chương 6 tiểu luận)
-- [ ] Rà lại thông báo lỗi khớp với đặc tả
-- [ ] Cập nhật phần "Cài đặt và chạy" trong README
+- [x] Bộ request Postman cho mọi endpoint, lưu trong `docs/` để cả nhóm import (`docs/ThuVien_THPT_Nhom07.postman_collection.json`)
+- [x] Bảng test case theo 6 tình huống TH1–TH6 và các luồng thay thế quan trọng (dùng cho chương 6 tiểu luận: `docs/BANG_TEST_CASE_CHUONG_6.md`)
+- [x] Rà lại thông báo lỗi khớp với đặc tả và đồng bộ toàn bộ 11 file test tự động (`backend/tests/`, 88 test)
+- [x] Cập nhật phần "Cài đặt và sử dụng" (Chương 7) trong `README.md`
+
+**Trạng thái:** xong.
 
 ---
 

@@ -28,5 +28,7 @@ router.use('/loans', require('./modules/loans/loans.routes'));
 router.use('/returns', require('./modules/returns/returns.routes'));
 router.use('/fines', require('./modules/fines/fines.routes'));
 router.use('/me', require('./modules/readers/me.routes'));
+router.use('/reports', require('./modules/reports/reports.routes'));
+router.use('/reminders', require('./modules/reminders/reminders.routes'));
 
 module.exports = router;

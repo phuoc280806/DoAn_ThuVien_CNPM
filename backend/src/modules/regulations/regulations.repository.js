@@ -53,15 +53,16 @@ async function insert(data, db = pool) {
 }
 
 async function insertLog(data, db = pool) {
-  await db.query(
+  const [result] = await db.query(
     `INSERT INTO regulation_logs
        (change_type, reader_type, regulation_id, old_values, new_values, effective_from,
         reason, affected_tickets, changed_by)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [data.changeType, data.readerType, data.regulationId,
+    [data.changeType, data.readerType ?? null, data.regulationId ?? null,
       data.oldValues ? JSON.stringify(data.oldValues) : null, JSON.stringify(data.newValues),
-      data.effectiveFrom, data.reason ?? null, data.affectedTickets ?? null, data.changedBy],
+      data.effectiveFrom ?? null, data.reason ?? null, data.affectedTickets ?? null, data.changedBy],
   );
+  return result.insertId;
 }
 
 // UC014 – Nhật ký thay đổi quy định, mới nhất trước
@@ -96,4 +97,78 @@ async function searchLogs({ from, to, readerType, changedBy, limit, offset }, db
   return { rows, total };
 }
 
-module.exports = { findEffective, listVersions, findById, existsOnDate, insert, insertLog, searchLogs };
+// ---------------------------------------------------------------------
+// UC015 – Áp dụng quy định mới cho phiếu đang mượn
+// ---------------------------------------------------------------------
+
+async function listActiveTickets(readerType, db = pool, { forUpdate = false } = {}) {
+  const where = ["t.status = 'BORROWING'"];
+  const params = [];
+  if (readerType && readerType !== 'ALL') {
+    where.push('r.reader_type = ?');
+    params.push(readerType);
+  }
+  const [rows] = await db.query(
+    `SELECT t.borrow_id, t.reader_id, t.regulation_id, t.borrow_date,
+            t.snap_borrow_days, t.snap_fine_per_day, t.snap_max_fine_per_book, t.snap_renew_days,
+            r.reader_code, r.full_name AS reader_name, r.reader_type
+     FROM borrow_tickets t
+     JOIN readers r ON r.reader_id = t.reader_id
+     WHERE ${where.join(' AND ')}
+     ORDER BY t.borrow_id
+     ${forUpdate ? 'FOR UPDATE OF t' : ''}`,
+    params,
+  );
+  return rows;
+}
+
+async function listOpenDetailsByTickets(borrowIds, db = pool, { forUpdate = false } = {}) {
+  if (borrowIds.length === 0) return [];
+  const [rows] = await db.query(
+    `SELECT d.borrow_detail_id, d.borrow_id, d.copy_id, d.due_date, d.renew_count
+     FROM borrow_details d
+     WHERE d.borrow_id IN (?) AND d.return_date IS NULL
+     ORDER BY d.borrow_detail_id
+     ${forUpdate ? 'FOR UPDATE OF d' : ''}`,
+    [borrowIds],
+  );
+  return rows;
+}
+
+async function updateTicketSnapshot(borrowId, regulationId, snapUpdates, db = pool) {
+  const sets = ['regulation_id = ?'];
+  const params = [regulationId];
+  for (const [col, val] of Object.entries(snapUpdates)) {
+    sets.push(`${col} = ?`);
+    params.push(val);
+  }
+  params.push(borrowId);
+  await db.query(`UPDATE borrow_tickets SET ${sets.join(', ')} WHERE borrow_id = ?`, params);
+}
+
+async function updateDetailDueDate(borrowDetailId, newDueDate, db = pool) {
+  await db.query('UPDATE borrow_details SET due_date = ? WHERE borrow_detail_id = ?', [newDueDate, borrowDetailId]);
+}
+
+async function insertSnapshotChanges(logId, changes, db = pool) {
+  if (changes.length === 0) return;
+  await db.query(
+    'INSERT INTO ticket_snapshot_changes (log_id, borrow_id, old_values, new_values) VALUES ?',
+    [changes.map((c) => [logId, c.borrowId, JSON.stringify(c.oldValues), JSON.stringify(c.newValues)])],
+  );
+}
+
+module.exports = {
+  findEffective,
+  listVersions,
+  findById,
+  existsOnDate,
+  insert,
+  insertLog,
+  searchLogs,
+  listActiveTickets,
+  listOpenDetailsByTickets,
+  updateTicketSnapshot,
+  updateDetailDueDate,
+  insertSnapshotChanges,
+};

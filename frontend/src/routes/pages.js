@@ -15,6 +15,9 @@ import SearchPage from '../pages/reader/SearchPage';
 import MyLoansPage from '../pages/reader/MyLoansPage';
 import MyHistoryPage from '../pages/reader/MyHistoryPage';
 import MyFinesPage from '../pages/reader/MyFinesPage';
+import ReadersPage from '../pages/librarian/ReadersPage';
+import BooksPage from '../pages/librarian/BooksPage';
+import CopiesPage from '../pages/librarian/CopiesPage';
 
 /**
  * DANH SÁCH TRANG — nơi duy nhất khai báo đường dẫn, quyền và menu.
@@ -53,9 +56,9 @@ export const PAGES = [
   { path: '/renew', label: 'Gia hạn', icon: 'arrow-repeat', roles: STAFF, uc: ['UC008'], phase: 'FE2', component: RenewPage },
 
   // Thủ thư — độc giả & sách (FE5)
-  { path: '/readers', label: 'Độc giả & thẻ', icon: 'people', roles: STAFF, uc: ['UC003'], phase: 'FE5' },
-  { path: '/books', label: 'Đầu sách', icon: 'book', roles: STAFF, uc: ['UC004', 'UC006'], phase: 'FE5' },
-  { path: '/copies', label: 'Bản sách', icon: 'upc-scan', roles: STAFF, uc: ['UC005'], phase: 'FE5' },
+  { path: '/readers', label: 'Độc giả & thẻ', icon: 'people', roles: STAFF, uc: ['UC003'], phase: 'FE5', component: ReadersPage },
+  { path: '/books', label: 'Đầu sách', icon: 'book', roles: STAFF, uc: ['UC004', 'UC006'], phase: 'FE5', component: BooksPage },
+  { path: '/copies', label: 'Bản sách', icon: 'upc-scan', roles: STAFF, uc: ['UC005'], phase: 'FE5', component: CopiesPage },
 
   // Thủ thư — báo cáo, nhắc hạn (FE6)
   { path: '/reminders', label: 'Nhắc hạn trả', icon: 'envelope', roles: STAFF, uc: ['UC017'], phase: 'FE6', component: RemindersPage },

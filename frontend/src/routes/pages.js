@@ -9,6 +9,8 @@ import AccountsPage from '../pages/admin/AccountsPage';
 import RegulationsPage from '../pages/admin/RegulationsPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import LoansPage from '../pages/admin/LoansPage';
+import ReportsPage from '../pages/librarian/ReportsPage';
+
 
 /**
  * DANH SÁCH TRANG — nơi duy nhất khai báo đường dẫn, quyền và menu.
@@ -52,8 +54,8 @@ export const PAGES = [
   { path: '/copies', label: 'Bản sách', icon: 'upc-scan', roles: STAFF, uc: ['UC005'], phase: 'FE5' },
 
   // Thủ thư — báo cáo, nhắc hạn (FE6)
-  { path: '/reminders', label: 'Nhắc hạn trả', icon: 'envelope', roles: STAFF, uc: ['UC017'], phase: 'FE6' },
-  { path: '/reports', label: 'Báo cáo thống kê', icon: 'bar-chart-line', roles: STAFF, uc: ['UC016'], phase: 'FE6' },
+  { path: '/reminders', label: 'Nhắc hạn trả', icon: 'envelope', roles: STAFF, uc: ['UC017'], phase: 'FE6', component: RemindersPage },
+  { path: '/reports', label: 'Báo cáo thống kê', icon: 'bar-chart-line', roles: STAFF, uc: ['UC016'], phase: 'FE6', component: ReportsPage },
 
   // Admin (FE3)
   { path: '/accounts', label: 'Tài khoản & phân quyền', icon: 'shield-lock', roles: ADMIN, uc: ['UC002'], phase: 'FE3', component: AccountsPage },

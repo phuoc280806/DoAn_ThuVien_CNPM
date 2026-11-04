@@ -11,6 +11,10 @@ import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import LoansPage from '../pages/admin/LoansPage';
 import ReportsPage from '../pages/librarian/ReportsPage';
 import RemindersPage from '../pages/librarian/RemindersPage';
+import SearchPage from '../pages/reader/SearchPage';
+import MyLoansPage from '../pages/reader/MyLoansPage';
+import MyHistoryPage from '../pages/reader/MyHistoryPage';
+import MyFinesPage from '../pages/reader/MyFinesPage';
 
 /**
  * DANH SÁCH TRANG — nơi duy nhất khai báo đường dẫn, quyền và menu.
@@ -37,10 +41,10 @@ export const PAGES = [
   { path: '/profile', label: 'Tài khoản cá nhân', icon: 'person-circle', roles: ALL, uc: ['UC001'], phase: 'FE1', component: ProfilePage },
 
   // Độc giả (FE4)
-  { path: '/search', label: 'Tra cứu sách', icon: 'search', roles: [ROLES.READER], uc: ['UC006'], phase: 'FE4' },
-  { path: '/my-loans', label: 'Sách đang mượn', icon: 'journal-bookmark', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4' },
-  { path: '/my-history', label: 'Lịch sử mượn/trả', icon: 'clock-history', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4' },
-  { path: '/my-fines', label: 'Tiền phạt', icon: 'cash-coin', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4' },
+  { path: '/search', label: 'Tra cứu sách', icon: 'search', roles: [ROLES.READER], uc: ['UC006'], phase: 'FE4', component: SearchPage },
+  { path: '/my-loans', label: 'Sách đang mượn', icon: 'journal-bookmark', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4', component: MyLoansPage},
+  { path: '/my-history', label: 'Lịch sử mượn/trả', icon: 'clock-history', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4', component: MyHistoryPage },
+  { path: '/my-fines', label: 'Tiền phạt', icon: 'cash-coin', roles: [ROLES.READER], uc: ['UC012'], phase: 'FE4', component: MyFinesPage },
 
   // Thủ thư — nghiệp vụ mượn trả (FE2)
   { path: '/borrow', label: 'Lập phiếu mượn', icon: 'box-arrow-right', roles: STAFF, uc: ['UC007'], phase: 'FE2', component: BorrowPage },

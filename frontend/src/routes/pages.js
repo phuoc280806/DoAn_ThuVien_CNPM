@@ -10,7 +10,7 @@ import RegulationsPage from '../pages/admin/RegulationsPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import LoansPage from '../pages/admin/LoansPage';
 import ReportsPage from '../pages/librarian/ReportsPage';
-
+import RemindersPage from '../pages/librarian/RemindersPage';
 
 /**
  * DANH SÁCH TRANG — nơi duy nhất khai báo đường dẫn, quyền và menu.

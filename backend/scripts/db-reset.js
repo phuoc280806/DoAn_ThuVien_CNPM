@@ -5,6 +5,7 @@ require('dotenv').config({ quiet: true });
 const fs = require('node:fs');
 const path = require('node:path');
 const mysql = require('mysql2/promise');
+const dbSsl = require('../src/config/dbSsl');
 
 const SQL_DIR = path.join(__dirname, '..', '..', 'database');
 const DEFAULT_DB = 'thuvien_thpt';
@@ -19,6 +20,7 @@ async function resetDatabase(database = DEFAULT_DB) {
     port: Number(process.env.DB_PORT) || 3306,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
+    ssl: dbSsl(),
     multipleStatements: true,
     charset: 'utf8mb4',
   });

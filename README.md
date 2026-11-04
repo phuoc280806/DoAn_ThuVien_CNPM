@@ -186,6 +186,7 @@ Frontend đã xong đủ 6 giai đoạn: FE1 (khung, đăng nhập, menu theo va
 | `DB_HOST`, `DB_PORT` | `localhost`, `3306` | Địa chỉ và cổng kết nối MySQL |
 | `DB_USER`, `DB_PASSWORD` | `root`, *(trống)* | Tài khoản và mật khẩu MySQL |
 | `DB_NAME` | `thuvien_thpt` | Tên cơ sở dữ liệu chính |
+| `DB_SSL`, `DB_CA` | *(trống)* | Chỉ dùng khi kết nối MySQL online: `DB_SSL=true` và `DB_CA` là nội dung chứng chỉ CA. Chạy local thì để trống |
 | `JWT_SECRET`, `JWT_EXPIRES_IN` | `...`, `1d` | Khóa bí mật và thời hạn của JWT token |
 | `CLIENT_URL` | `http://localhost:5173` | Địa chỉ Frontend được phép gọi CORS |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | *(tùy chọn)* | Cấu hình SMTP (ví dụ Gmail App Password) để gửi email nhắc hạn thật ở UC017. Nếu bỏ trống `SMTP_HOST`, email chỉ được **giả lập** (độc giả không nhận được); API báo rõ điều này và `reminder_logs` có ghi chú |

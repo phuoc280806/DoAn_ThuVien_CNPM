@@ -128,3 +128,24 @@ Thực hiện trên dữ liệu `database/seed.sql` (chạy `npm run db:reset` t
 | **GUI-20** | Quản lý mượn trả | Lọc trạng thái "Có sách quá hạn" | Còn 2 phiếu `PM000003`, `PM000004` | **PASS** |
 | **GUI-21** | Áp dụng cho phiếu đang mượn – UC015 | Phạm vi Học sinh, tham số Số ngày mượn → Xem trước → Áp dụng (lần đầu bỏ trống lý do) | Xem trước 5 phiếu với hạn trả cũ → mới từng cuốn; thiếu lý do báo "Cần nhập lý do áp dụng"; áp dụng báo "Đã áp dụng quy định mới cho 5 phiếu đang mượn" | **PASS** |
 | **GUI-22** | Nhật ký – UC014 | Mở Nhật ký thay đổi, xem hai tab | Tab quy định có dòng "Áp dụng phiếu đang mượn" (lý do, 5 phiếu) và "Cấu hình quy định" (cũ → mới); tab hệ thống có 6 thao tác tài khoản ở GUI-15 → GUI-17 với người thực hiện, đối tượng, chi tiết | **PASS** |
+| **GUI-23** | Tra cứu sách – UC006 | Độc giả `HS2026001` tìm `de men`, lọc thể loại "Khoa học", tìm `xyzxyz` | 1 kết quả "Dế Mèn phiêu lưu ký" còn 2/3 bản; lọc ra 4 sách Khoa học; từ khóa không có báo "Không tìm thấy đầu sách phù hợp…" | **PASS** |
+| **GUI-24** | Tra cứu sách – UC006 8a | Tìm `Không gia đình`, tìm `vat li`, bấm xem chi tiết một sách | "Không gia đình" hiện "Hết sách"; `vat li` chỉ thấy "Vật lí 11" (đầu sách đã ẩn không hiện); modal chi tiết đủ ISBN, tác giả, NXB, năm, mô tả | **PASS** |
+| **GUI-25** | Sách đang mượn – UC012 | `HS2026003` và `HS2026006` mở Sách đang mượn | `HS2026003` có cảnh báo sắp đến hạn, "Còn 2 ngày"; `HS2026006` có cảnh báo quá hạn, "Quá hạn 45 ngày"; mở chi tiết phiếu thấy snapshot quy định | **PASS** |
+| **GUI-26** | Lịch sử mượn/trả – UC012 5a, 5b | `GV2026002` xem lịch sử, lọc khoảng ngày ngược, lọc "Đang mượn" | 2 dòng của `PM000007`; báo "Khoảng thời gian không hợp lệ"; báo "Không có giao dịch phù hợp" | **PASS** |
+| **GUI-27** | Tiền phạt – UC012 | `HS2026005` mở Tiền phạt | Chưa nộp 3.000đ, cảnh báo bị chặn mượn mới, khoản phạt "Chưa thu" | **PASS** |
+| **GUI-28** | Biên lai của độc giả | `GV2026002` mở Tiền phạt, bấm `BL000002` | Biên lai 4.000đ, người thu Phan Minh Tuấn (TT02), in được | **PASS** |
+| **GUI-29** | Giao diện điện thoại | Mở các trang độc giả ở khung 390px | Bảng cuộn ngang, không vỡ khung, menu trượt dùng được | **PASS** |
+| **GUI-30** | Độc giả & thẻ – UC003 7b | Thêm hồ sơ với mã đã có `HS2026001` | Báo "Mã độc giả đã tồn tại" | **PASS** |
+| **GUI-31** | Độc giả & thẻ – UC003 | Thêm `HS2026099` rồi cấp thẻ; sửa sang Giáo viên | Thêm thành công, tự chuyển sang bước cấp thẻ, cấp thẻ thành công; khi sửa không đổi được mã độc giả, bảng cập nhật loại và tổ bộ môn | **PASS** |
+| **GUI-32** | Thẻ thư viện – UC003 | Gia hạn thẻ `HS2026007` (đã hết hạn) với ngày quá khứ rồi ngày hợp lệ; khóa và mở khóa thẻ | Báo "Ngày hết hạn mới phải sau ngày hôm nay"; gia hạn xong thẻ "Thẻ còn hạn"; khóa / mở khóa thành công | **PASS** |
+| **GUI-33** | Đầu sách – UC004 7a, 8a | Thêm "Hóa học 12" với năm 2999, sửa năm rồi lưu kèm 3 bản; thêm lại cùng ISBN | Báo lỗi năm xuất bản; thêm thành công; trùng ISBN báo "ISBN đã tồn tại trong hệ thống" | **PASS** |
+| **GUI-34** | Đầu sách – UC004 8b | Xóa "Dế Mèn", "Đắc nhân tâm", "Không gia đình"; hiện lại "Đắc nhân tâm" | Lần lượt: không xóa được vì còn bản đang mượn; được ẩn vì đã có lịch sử; xóa hẳn; hiện lại thành công | **PASS** |
+| **GUI-35** | Bản sách – nhập thêm | "Toán 10" nhập thêm 2 bản | "Đã nhập thêm 2 bản sách", có 5 bản, mã tự sinh | **PASS** |
+| **GUI-36** | Bản sách – UC005 | `BS000001` đang mượn; `BS000005` sang Hư hỏng không lý do rồi có lý do; `BS000039` đang Mất | Không đổi được bản đang mượn; thiếu lý do báo lỗi; đổi thành công; bản Mất chỉ cho về Khả dụng | **PASS** |
+| **GUI-40** | Báo cáo – UC016 (1) | Xem "Thống kê mượn / trả" từ 120 ngày trước đến hôm nay | 8 phiếu (HS 6, GV 2), 12 sách cho mượn, 3 đã trả, 9 đang mượn, 2 quá hạn | **PASS** |
+| **GUI-41** | Báo cáo – UC016 (2), (3) | Xem báo cáo quá hạn và báo cáo tiền phạt cùng kỳ | Quá hạn: 2 đang quá hạn, 2 trả trễ, tổng 42.000đ. Tiền phạt: tổng 7.000đ, đã thu 4.000đ, chưa thu 3.000đ, 1 độc giả còn nợ | **PASS** |
+| **GUI-42** | Báo cáo – UC016 bước 9–10 | Xuất Excel và PDF | Tải được file `.xlsx` và `.pdf`, mở được, tiếng Việt đúng | **PASS** |
+| **GUI-43** | Báo cáo – UC016 6a | Từ ngày sau Đến ngày | Báo "Kỳ báo cáo không hợp lệ" | **PASS** |
+| **GUI-44** | Nhắc hạn – UC017 4a | Mở Nhắc hạn trả | 3 cuốn cần nhắc; dòng `HS2026006` chưa có email không chọn được, hiện "Độc giả chưa có email, hãy nhắc trực tiếp" | **PASS** |
+| **GUI-45** | Nhắc hạn – UC017 | Chọn tất cả, gửi email nhắc, xem lịch sử | Gửi 2 cuốn; chưa cấu hình SMTP thì báo rõ email chỉ được giả lập; số lần nhắc tăng lên 1, lịch sử ghi người gửi và thời điểm | **PASS** |
+| **GUI-46** | Tổng quan – 3 vai trò | Đăng nhập `HS2026003`, `TT01`, `AD001` | Độc giả: đang mượn 1, sắp đến hạn 1. Thủ thư / Admin: 6 phiếu đang mượn, 2 có sách quá hạn, 1 khoản phạt chưa thu, 3 cần nhắc; Admin có thêm thay đổi quy định gần đây | **PASS** |

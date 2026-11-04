@@ -120,9 +120,9 @@ Trong mỗi module backend: `routes` khai báo endpoint → `controller` nhận 
 | FE1 | Khung dự án, đăng nhập, menu theo vai trò, chặn route, tài khoản cá nhân | Phước (xong) |
 | FE2 | Thủ thư: lập phiếu mượn, trả sách, thu phạt, gia hạn (UC007–UC011) | Phước (xong) |
 | FE3 | Admin: tài khoản, cấu hình quy định, nhật ký, áp dụng cho phiếu đang mượn, quản lý mượn trả (UC002, UC013–UC015) | Phước (xong) |
-| FE4 | Độc giả: tra cứu sách, sách đang mượn, lịch sử, tiền phạt (UC006, UC012) | |
-| FE5 | Quản lý độc giả & thẻ, đầu sách, bản sách (UC003–UC005) | |
-| FE6 | Báo cáo, nhắc hạn, số liệu trang Tổng quan (UC016, UC017) | |
+| FE4 | Độc giả: tra cứu sách, sách đang mượn, lịch sử, tiền phạt (UC006, UC012) | Quỳnh Như (xong) |
+| FE5 | Quản lý độc giả & thẻ, đầu sách, bản sách (UC003–UC005) | Quỳnh Như (xong) |
+| FE6 | Báo cáo, nhắc hạn, số liệu trang Tổng quan (UC016, UC017) | Quỳnh Như (xong) |
 
 Hướng dẫn chi tiết từng trang của FE4, FE5, FE6 (API cần gọi, dữ liệu trả về, màn hình tham khảo, ca kiểm thử): **[docs/LO_TRINH_FRONTEND.md](docs/LO_TRINH_FRONTEND.md)**.
 
@@ -176,7 +176,7 @@ npm install
 npm run dev
 ```
 
-Frontend đang làm theo giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân), FE2 (lập phiếu mượn, trả sách, thu phạt, gia hạn) và FE3 (tài khoản, quy định, nhật ký, quản lý mượn trả của Admin) đã xong; các trang chưa làm hiện "Trang đang được xây dựng" kèm giai đoạn phụ trách.
+Frontend đã xong đủ 6 giai đoạn: FE1 (khung, đăng nhập, menu theo vai trò, tài khoản cá nhân), FE2 (lập phiếu mượn, trả sách, thu phạt, gia hạn), FE3 (tài khoản, quy định, nhật ký, quản lý mượn trả của Admin), FE4 (trang độc giả), FE5 (độc giả & thẻ, đầu sách, bản sách) và FE6 (báo cáo, nhắc hạn, số liệu trang Tổng quan).
 
 #### Cấu hình biến môi trường (`backend/.env`)
 
@@ -403,6 +403,6 @@ Bộ sưu tập Postman: [docs/ThuVien_THPT_Nhom07.postman_collection.json](docs
 - [x] Phân tích: lớp phân tích, biểu đồ trình tự, ERD
 - [x] Thiết kế cơ sở dữ liệu (`database/schema.sql`, `database/seed.sql`)
 - [x] Backend (GĐ1 → GĐ9, đầy đủ 17 Use Case UC001–UC017)
-- [ ] Frontend (FE1–FE3 xong; FE4–FE6 đang làm)
+- [x] Frontend (FE1–FE6)
 - [x] Kiểm thử (94 test tự động + Postman Collection + Bảng test case Chương 6)
 - [x] Hướng dẫn cài đặt và sử dụng (Chương 7)

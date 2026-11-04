@@ -9,13 +9,13 @@ Frontend ReactJS + Bootstrap cho hệ thống quản lý thư viện trường T
 | FE1 | Khung dự án, đăng nhập, menu theo vai trò, chặn quyền, tài khoản cá nhân | `/login`, `/profile` | Xong |
 | FE2 | Thủ thư: lập phiếu mượn, trả sách, thu phạt, gia hạn | `/borrow`, `/return`, `/fines`, `/renew` | Xong |
 | FE3 | Admin: tài khoản, quy định, nhật ký, quản lý mượn trả | `/accounts`, `/regulations`, `/audit-logs`, `/loans` | Xong |
-| **FE4** | **Độc giả**: tra cứu sách, sách đang mượn, lịch sử, tiền phạt | `/search`, `/my-loans`, `/my-history`, `/my-fines` | Cần làm |
-| **FE5** | **Thủ thư**: hồ sơ độc giả & thẻ, đầu sách, bản sách | `/readers`, `/books`, `/copies` | Cần làm |
-| **FE6** | **Thủ thư/Admin**: báo cáo, nhắc hạn; số liệu trang Tổng quan cho cả 3 vai trò | `/reports`, `/reminders`, `/dashboard` | Cần làm |
+| **FE4** | **Độc giả**: tra cứu sách, sách đang mượn, lịch sử, tiền phạt | `/search`, `/my-loans`, `/my-history`, `/my-fines` | Xong |
+| **FE5** | **Thủ thư**: hồ sơ độc giả & thẻ, đầu sách, bản sách | `/readers`, `/books`, `/copies` | Xong |
+| **FE6** | **Thủ thư/Admin**: báo cáo, nhắc hạn; số liệu trang Tổng quan cho cả 3 vai trò | `/reports`, `/reminders`, `/dashboard` | Xong |
 
 FE4, FE5, FE6 **không phụ thuộc nhau**, ba người làm song song được. Backend đã có đủ API cho cả ba giai đoạn, **không cần sửa backend**.
 
-Các trang này đã có sẵn đường dẫn và mục menu, hiện đang hiện "Trang đang được xây dựng". Việc của mỗi người là viết component cho trang rồi gắn vào.
+Cả ba giai đoạn đã hoàn thành; các mục dưới đây giữ lại làm mô tả từng trang.
 
 ---
 

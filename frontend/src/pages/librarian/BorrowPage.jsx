@@ -277,7 +277,7 @@ export default function BorrowPage() {
 
   return (
     <>
-      <PageHeader title="Lập phiếu mượn" subtitle="UC007 · Kiểm tra điều kiện → chọn bản sách → xác nhận" />
+      <PageHeader title="Lập phiếu mượn" />
 
       <div className="steps mb-4">
         {['Chọn độc giả', 'Chọn bản sách', 'Xác nhận phiếu'].map((label, i) => (

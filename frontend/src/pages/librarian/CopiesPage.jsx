@@ -94,7 +94,7 @@ export default function CopiesPage() {
 
   return (
     <>
-      <PageHeader title="Bản sách" subtitle="UC005 · Tra bản sách theo mã, cập nhật trạng thái Khả dụng / Hư hỏng / Mất" />
+      <PageHeader title="Bản sách" />
 
       <Card className="mb-4">
         <Card.Body>

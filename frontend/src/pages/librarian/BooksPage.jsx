@@ -176,7 +176,7 @@ function CopiesModal({ book, onClose, onChanged }) {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <span className="small text-secondary me-auto">Bấm mã bản sách để đổi trạng thái (UC005).</span>
+        <span className="small text-secondary me-auto">Bấm mã bản sách để đổi trạng thái.</span>
         <Button onClick={onClose}>Đóng</Button>
       </Modal.Footer>
     </Modal>
@@ -284,7 +284,7 @@ export default function BooksPage() {
 
   return (
     <>
-      <PageHeader title="Đầu sách" subtitle="UC004 · Thêm, sửa, ẩn / xóa đầu sách; nhập thêm bản sách">
+      <PageHeader title="Đầu sách">
         <Button onClick={() => open('create')}>
           <i className="bi bi-plus-lg me-2" />
           Thêm đầu sách

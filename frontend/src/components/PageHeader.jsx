@@ -1,7 +1,7 @@
 /**
  * Tiêu đề trang: tên, mô tả ngắn và các nút thao tác bên phải.
  *
- *   <PageHeader title="Lập phiếu mượn" subtitle="UC007">
+ *   <PageHeader title="Lập phiếu mượn" subtitle="Mô tả ngắn">
  *     <Button>...</Button>
  *   </PageHeader>
  */

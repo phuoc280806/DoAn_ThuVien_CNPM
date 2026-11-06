@@ -243,7 +243,7 @@ export default function AuditLogsPage() {
   const [tab, setTab] = useState('regulations');
   return (
     <>
-      <PageHeader title="Nhật ký thay đổi" subtitle="UC014 · Chỉ đọc, không sửa hoặc xóa được; mới nhất ở trên" />
+      <PageHeader title="Nhật ký thay đổi" />
       <Nav variant="tabs" activeKey={tab} onSelect={setTab} className="mb-4">
         <Nav.Item>
           <Nav.Link eventKey="regulations">Thay đổi quy định</Nav.Link>

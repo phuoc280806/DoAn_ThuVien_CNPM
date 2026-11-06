@@ -98,7 +98,7 @@ export default function SearchPage() {
 
   return (
     <>
-      <PageHeader title="Tra cứu sách" subtitle="UC006 · Tìm theo tên sách, tác giả hoặc ISBN (gõ có dấu hay không dấu đều được)" />
+      <PageHeader title="Tra cứu sách" />
 
       <Card className="mb-4">
         <Card.Body>

@@ -166,7 +166,7 @@ export default function ReturnPage() {
 
   return (
     <>
-      <PageHeader title="Trả sách" subtitle="UC009, UC010 · Quét mã bản sách để tìm phiếu đang mở, mỗi lần xử lý một cuốn" />
+      <PageHeader title="Trả sách" />
 
       <Row className="g-4">
         <Col xl={8} className="d-flex flex-column gap-4">

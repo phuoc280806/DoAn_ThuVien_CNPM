@@ -129,7 +129,7 @@ export default function RemindersPage() {
 
   return (
     <>
-      <PageHeader title="Nhắc hạn trả" subtitle={`UC017 · Sách còn không quá ${data?.thresholdDays ?? 3} ngày đến hạn hoặc đã quá hạn; gửi email nhắc độc giả`}>
+      <PageHeader title="Nhắc hạn trả">
         <Button onClick={send} disabled={selected.length === 0 || sending}>
           {sending ? <Spinner animation="border" size="sm" className="me-2" /> : <i className="bi bi-envelope me-2" />}
           Gửi email nhắc ({selected.length})

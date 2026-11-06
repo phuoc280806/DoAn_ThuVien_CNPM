@@ -18,23 +18,23 @@ const R = 'READER';
 const L = 'LIBRARIAN';
 const A = 'ADMIN';
 const PERMISSIONS = [
-  ['UC001', 'Đăng nhập / đăng xuất', [R, L, A]],
-  ['UC002', 'Quản lý tài khoản & phân quyền', [A]],
-  ['UC003', 'Quản lý hồ sơ độc giả & thẻ thư viện', [L, A]],
-  ['UC004', 'Quản lý đầu sách', [L, A]],
-  ['UC005', 'Quản lý trạng thái bản sách', [L, A]],
-  ['UC006', 'Tra cứu sách & xem số bản khả dụng', [R, L, A]],
-  ['UC007', 'Lập phiếu mượn', [L, A]],
-  ['UC008', 'Gia hạn mượn', [L, A]],
-  ['UC009', 'Trả sách', [L, A]],
-  ['UC010', 'Tính tiền phạt', [L, A]],
-  ['UC011', 'Thu tiền phạt', [L, A]],
-  ['UC012', 'Xem lịch sử mượn/trả & khoản phạt của mình', [R]],
-  ['UC013', 'Cấu hình quy định', [A]],
-  ['UC014', 'Xem nhật ký thay đổi quy định', [A]],
-  ['UC015', 'Áp dụng quy định mới cho phiếu đang mượn', [A]],
-  ['UC016', 'Báo cáo thống kê', [L, A]],
-  ['UC017', 'Nhắc hạn trả', [L, A]],
+  ['Đăng nhập / đăng xuất', [R, L, A]],
+  ['Quản lý tài khoản & phân quyền', [A]],
+  ['Quản lý hồ sơ độc giả & thẻ thư viện', [L, A]],
+  ['Quản lý đầu sách', [L, A]],
+  ['Quản lý trạng thái bản sách', [L, A]],
+  ['Tra cứu sách & xem số bản khả dụng', [R, L, A]],
+  ['Lập phiếu mượn', [L, A]],
+  ['Gia hạn mượn', [L, A]],
+  ['Trả sách', [L, A]],
+  ['Tính tiền phạt', [L, A]],
+  ['Thu tiền phạt', [L, A]],
+  ['Xem lịch sử mượn/trả & khoản phạt của mình', [R]],
+  ['Cấu hình quy định', [A]],
+  ['Xem nhật ký thay đổi quy định', [A]],
+  ['Áp dụng quy định mới cho phiếu đang mượn', [A]],
+  ['Báo cáo thống kê', [L, A]],
+  ['Nhắc hạn trả', [L, A]],
 ];
 
 const NEW_ACCOUNT = { role: 'LIBRARIAN', username: '', password: '', confirm: '', fullName: '', email: '', phone: '' };
@@ -73,7 +73,6 @@ function PermissionMatrix() {
         <Table responsive className="align-middle mb-0">
           <thead>
             <tr>
-              <th>Mã</th>
               <th>Chức năng</th>
               <th className="text-center">Độc giả</th>
               <th className="text-center">Thủ thư</th>
@@ -81,9 +80,8 @@ function PermissionMatrix() {
             </tr>
           </thead>
           <tbody>
-            {PERMISSIONS.map(([code, name, roles]) => (
-              <tr key={code}>
-                <td>{code}</td>
+            {PERMISSIONS.map(([name, roles]) => (
+              <tr key={name}>
                 <td>{name}</td>
                 <td className="text-center">{cell(roles, R)}</td>
                 <td className="text-center">{cell(roles, L)}</td>
@@ -169,7 +167,7 @@ export default function AccountsPage() {
 
   return (
     <>
-      <PageHeader title="Tài khoản & phân quyền" subtitle="UC002 · Tạo tài khoản, khóa / mở khóa, đặt lại mật khẩu, đổi vai trò">
+      <PageHeader title="Tài khoản & phân quyền">
         {tab === 'list' && (
           <Button onClick={() => open('create')}>
             <i className="bi bi-person-plus me-2" />

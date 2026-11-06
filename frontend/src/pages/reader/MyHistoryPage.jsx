@@ -21,7 +21,7 @@ export default function MyHistoryPage() {
 
   return (
     <>
-      <PageHeader title="Lịch sử mượn/trả" subtitle="UC012 · Toàn bộ các lần mượn của bạn, mới nhất ở trên" />
+      <PageHeader title="Lịch sử mượn/trả" />
 
       <Card className="mb-4">
         <Card.Body>

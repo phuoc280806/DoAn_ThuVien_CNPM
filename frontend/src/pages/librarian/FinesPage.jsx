@@ -84,7 +84,7 @@ export default function FinesPage() {
 
   return (
     <>
-      <PageHeader title="Thu tiền phạt" subtitle="UC011 · Thu các khoản phạt trả trễ, cấp biên lai điện tử" />
+      <PageHeader title="Thu tiền phạt" />
 
       <Card className="mb-4">
         <Card.Body>

@@ -193,7 +193,6 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex-grow-1">
                   <div className="fw-medium">{page.label}</div>
-                  <div className="small text-secondary">{page.uc.join(', ')}</div>
                 </div>
                 {!page.component && (
                   <Badge bg="secondary-subtle" text="secondary-emphasis" pill>

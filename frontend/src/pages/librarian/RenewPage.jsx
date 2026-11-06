@@ -71,7 +71,7 @@ export default function RenewPage() {
 
   return (
     <>
-      <PageHeader title="Gia hạn" subtitle="UC008 · Gia hạn trực tiếp tại quầy, mỗi cuốn được gia hạn 1 lần khi chưa quá hạn" />
+      <PageHeader title="Gia hạn" />
 
       <Card className="mb-4">
         <Card.Header className="fw-semibold">Tìm sách đang mượn</Card.Header>

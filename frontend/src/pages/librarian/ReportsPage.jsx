@@ -277,7 +277,7 @@ export default function ReportsPage() {
 
   return (
     <>
-      <PageHeader title="Báo cáo thống kê" subtitle="UC016 · Chọn loại báo cáo và kỳ, xem trên màn hình hoặc xuất Excel / PDF" />
+      <PageHeader title="Báo cáo thống kê" />
 
       <Card className="mb-4">
         <Card.Body>

@@ -161,7 +161,7 @@ export default function ReadersPage() {
 
   return (
     <>
-      <PageHeader title="Độc giả & thẻ" subtitle="UC003 · Lập hồ sơ độc giả, cấp / gia hạn / khóa thẻ thư viện">
+      <PageHeader title="Độc giả & thẻ">
         <Button onClick={() => open('create')}>
           <i className="bi bi-person-plus me-2" />
           Thêm độc giả

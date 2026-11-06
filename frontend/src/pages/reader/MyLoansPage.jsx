@@ -18,7 +18,7 @@ export default function MyLoansPage() {
 
   return (
     <>
-      <PageHeader title="Sách đang mượn" subtitle="UC012 · Theo dõi hạn trả của các cuốn bạn đang giữ" />
+      <PageHeader title="Sách đang mượn" />
 
       {error && <Alert variant="danger">{error}</Alert>}
 

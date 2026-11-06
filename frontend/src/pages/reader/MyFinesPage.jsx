@@ -51,7 +51,7 @@ export default function MyFinesPage() {
 
   return (
     <>
-      <PageHeader title="Tiền phạt" subtitle="UC012 · Phạt trả trễ = số ngày trễ × mức phạt/ngày, không quá mức tối đa ghi trên phiếu" />
+      <PageHeader title="Tiền phạt" />
 
       {error && <Alert variant="danger">{error}</Alert>}
 

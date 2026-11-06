@@ -125,7 +125,7 @@ function ApplyToActiveLoans({ onApplied }) {
 
   return (
     <Card>
-      <Card.Header className="fw-semibold">Áp dụng quy định hiện hành cho phiếu đang mượn (trường hợp đặc biệt) · UC015</Card.Header>
+      <Card.Header className="fw-semibold">Áp dụng quy định hiện hành cho phiếu đang mượn (trường hợp đặc biệt)</Card.Header>
       <Card.Body>
         <Alert variant="warning" className="small">
           Mặc định quy định mới <strong>không hồi tố</strong>: phiếu đã lập giữ snapshot cũ. Chỉ dùng khi cần, ví dụ thu hồi
@@ -354,7 +354,7 @@ export default function RegulationsPage() {
 
   return (
     <>
-      <PageHeader title="Cấu hình quy định" subtitle="UC013 · Quy định theo loại độc giả, có ngày hiệu lực; mỗi lần đổi tạo một phiên bản mới" />
+      <PageHeader title="Cấu hình quy định" />
 
       <ButtonGroup className="mb-4">
         {['STUDENT', 'TEACHER'].map((t) => (
